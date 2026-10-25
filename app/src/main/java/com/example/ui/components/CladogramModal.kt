@@ -67,7 +67,7 @@ fun CladogramModal(
                                 .background(PixelCyan)
                         )
                         Text(
-                            text = "TREE OF LIFE (16-BIT CLADOGRAM)",
+                            text = "🌳 TREE OF LIFE",
                             color = PixelGold,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -83,9 +83,9 @@ fun CladogramModal(
 
                 // Subtitle
                 Text(
-                    text = "Speciation branches spanning 4.0 Ga of planetary evolution. Extinct lineages fade to slate-gray.",
+                    text = "Every branch is a new kind of life splitting off from its ancestor. Gray branches are extinct.",
                     color = MutedText,
-                    fontSize = 10.sp,
+                    fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace
                 )
 
@@ -152,7 +152,7 @@ fun CladogramModal(
                         Text(
                             text = selectedNode.description,
                             color = PaleText,
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             fontFamily = FontFamily.Monospace
                         )
 
@@ -161,16 +161,16 @@ fun CladogramModal(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = "ANATOMICAL INNOVATION:",
+                                text = "NEW BODY TRICK:",
                                 color = PixelCyan,
-                                fontSize = 9.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace
                             )
                             Text(
                                 text = selectedNode.anatomicalInnovation,
                                 color = PaleText,
-                                fontSize = 9.sp,
+                                fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace
                             )
                         }
@@ -228,7 +228,7 @@ private fun PixelCladogramNodeRow(
                     .padding(horizontal = 4.dp, vertical = 1.dp)
             ) {
                 Text(
-                    text = "FOSSIL",
+                    text = "EXTINCT",
                     color = PixelCrimson,
                     fontSize = 8.sp,
                     fontWeight = FontWeight.Bold,

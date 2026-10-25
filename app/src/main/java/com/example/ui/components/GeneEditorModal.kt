@@ -123,16 +123,16 @@ fun GeneEditorModal(
                         )
                         Column {
                             Text(
-                                text = "vDNA GENE LAB & EVO-DEVO STUDIO",
+                                text = "🧪 CREATURE DESIGNER",
                                 color = PixelCyan,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontFamily = FontFamily.Monospace
                             )
                             Text(
-                                text = "PLANETARY GRAVITY LOAD: ${planetary.gravityG}g (${planetary.archetype.title.uppercase()})",
+                                text = "GRAVITY ON THIS PLANET: ${planetary.gravityG}g (${planetary.archetype.title.uppercase()})",
                                 color = if (planetary.gravityG > 1.5f) PixelCrimson else PixelGold,
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold
                             )
@@ -276,36 +276,36 @@ fun GeneEditorModal(
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
-                                    text = "BIOMECHANICS",
+                                    text = "BODY STATS",
                                     color = PixelCyan,
-                                    fontSize = 10.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.ExtraBold,
                                     fontFamily = FontFamily.Monospace
                                 )
                                 Text(
                                     text = "Length: ${String.format("%.2f m", previewOrganism.bodyLengthMeters)}",
                                     color = PaleText,
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                     fontFamily = FontFamily.Monospace
                                 )
                                 Text(
                                     text = "Mass: ${String.format("%.2f kg", previewOrganism.massKg)}",
                                     color = PaleText,
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                     fontFamily = FontFamily.Monospace
                                 )
                                 val stress = previewOrganism.biomechanics.skeletalYieldStressPercent
                                 Text(
-                                    text = "Skel. Stress: ${String.format("%.0f%%", stress)}",
+                                    text = "Bone Strain: ${String.format("%.0f%%", stress)}",
                                     color = if (stress < 70f) PixelEmerald else if (stress < 100f) PixelGold else PixelCrimson,
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     fontFamily = FontFamily.Monospace
                                 )
                                 Text(
-                                    text = "Metab: ${String.format("%.0f kJ/d", previewOrganism.biomechanics.dailyMetabolicKj)}",
+                                    text = "Food Needed: ${String.format("%.0f kJ/day", previewOrganism.biomechanics.dailyMetabolicKj)}",
                                     color = PaleText,
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                     fontFamily = FontFamily.Monospace
                                 )
                             }
@@ -324,7 +324,7 @@ fun GeneEditorModal(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "HOX SEGMENT REGULATORS (METAMERES)",
+                                text = "BODY SECTIONS",
                                 color = PixelGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.ExtraBold,
@@ -336,13 +336,13 @@ fun GeneEditorModal(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                SegmentCounter(label = "Cephalic (Head)", count = cephalicCount, min = 1, max = 3) {
+                                SegmentCounter(label = "Head Sections", count = cephalicCount, min = 1, max = 3) {
                                     cephalicCount = it
                                 }
-                                SegmentCounter(label = "Thorax (Limbs)", count = thoracicCount, min = 1, max = 8) {
+                                SegmentCounter(label = "Body & Limb Sections", count = thoracicCount, min = 1, max = 8) {
                                     thoracicCount = it
                                 }
-                                SegmentCounter(label = "Abdomen (Viscera)", count = abdominalCount, min = 1, max = 6) {
+                                SegmentCounter(label = "Belly Sections", count = abdominalCount, min = 1, max = 6) {
                                     abdominalCount = it
                                 }
                             }
@@ -361,7 +361,7 @@ fun GeneEditorModal(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "LOCOMOTIVE APPENDAGE",
+                                text = "HOW IT MOVES",
                                 color = PixelGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.ExtraBold,
@@ -387,7 +387,7 @@ fun GeneEditorModal(
                                         Text(
                                             text = limb.label.split(" ").first(),
                                             color = if (isSelected) OnPrimary else PaleText,
-                                            fontSize = 10.sp,
+                                            fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
                                             fontFamily = FontFamily.Monospace
                                         )
@@ -409,7 +409,7 @@ fun GeneEditorModal(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "vDNA ENZYMATIC & STRUCTURAL CODONS",
+                                text = "GENES (choose which traits it has)",
                                 color = PixelGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.ExtraBold,
@@ -447,7 +447,7 @@ fun GeneEditorModal(
                                         Text(
                                             text = label,
                                             color = if (isChecked) Color.White else PaleText,
-                                            fontSize = 10.sp,
+                                            fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
                                             fontFamily = FontFamily.Monospace
                                         )
@@ -473,7 +473,7 @@ fun GeneEditorModal(
                         modifier = Modifier.testTag("btn_cancel_gene_edit")
                     ) {
                         Text(
-                            text = "DISCARD",
+                            text = "CANCEL",
                             color = PaleText,
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace
@@ -493,7 +493,7 @@ fun GeneEditorModal(
                         modifier = Modifier.testTag("btn_inject_into_biosphere")
                     ) {
                         Text(
-                            text = if (isViable) "RELEASE INTO BIOSPHERE ►" else "COLLAPSE UNDER GRAVITY",
+                            text = if (isViable) "🌍 RELEASE INTO THE WORLD ►" else "💥 TOO HEAVY! IT WOULD COLLAPSE",
                             color = if (isViable) OnPrimary else MutedText,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -521,7 +521,7 @@ private fun SegmentCounter(
         Text(
             text = label,
             color = PaleText,
-            fontSize = 9.sp,
+            fontSize = 11.sp,
             fontFamily = FontFamily.Monospace
         )
         Row(

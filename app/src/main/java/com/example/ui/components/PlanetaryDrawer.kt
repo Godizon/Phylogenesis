@@ -57,7 +57,7 @@ fun PlanetaryDrawer(
                         .background(PixelCyan)
                 )
                 Text(
-                    text = "PLANETARY TELEMETRY",
+                    text = "🌍 PLANET STATS",
                     color = PixelGold,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -67,18 +67,18 @@ fun PlanetaryDrawer(
             }
 
             // Star & Orbit Card
-            PixelTelemetryCard(title = "STAR & ORBITAL MECHANICS") {
+            PixelTelemetryCard(title = "☀️ SUN & ORBIT") {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    MetricRow(label = "Host Star", value = "${planetary.starType.label} (${planetary.starType.spectralClass})")
-                    MetricRow(label = "Stellar Luminosity", value = String.format("%.2f L☉", planetary.stellarLuminosity))
-                    MetricRow(label = "Orbital Distance", value = String.format("%.2f AU (e=%.2f)", planetary.orbitalDistanceAU, planetary.orbitalEccentricity))
-                    MetricRow(label = "Axial Obliquity", value = String.format("%.1f°", planetary.axialTiltDeg))
-                    MetricRow(label = "Effective Insolation", value = String.format("%.0f W/m²", planetary.insolationWm2))
+                    MetricRow(label = "Sun Type", value = "${planetary.starType.label} (${planetary.starType.spectralClass})")
+                    MetricRow(label = "Sun Brightness", value = String.format("%.2f L☉", planetary.stellarLuminosity))
+                    MetricRow(label = "Distance From Sun", value = String.format("%.2f AU (e=%.2f)", planetary.orbitalDistanceAU, planetary.orbitalEccentricity))
+                    MetricRow(label = "Planet Tilt", value = String.format("%.1f°", planetary.axialTiltDeg))
+                    MetricRow(label = "Sunlight Reaching Surface", value = String.format("%.0f W/m²", planetary.insolationWm2))
                 }
             }
 
             // Surface & Climate Card
-            PixelTelemetryCard(title = "CLIMATOLOGY & SURFACE") {
+            PixelTelemetryCard(title = "🌡️ CLIMATE") {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     val tempColor = when {
                         planetary.surfaceTempCelsius < -10f -> IceBlue
@@ -86,15 +86,15 @@ fun PlanetaryDrawer(
                         else -> PixelEmerald
                     }
                     MetricRow(
-                        label = "Surface Temp [AVG]",
+                        label = "Average Temperature",
                         value = String.format("%.1f °C", planetary.surfaceTempCelsius),
                         valueColor = tempColor
                     )
-                    MetricRow(label = "Surface Pressure", value = String.format("%.2f bar", planetary.surfacePressureBar))
-                    MetricRow(label = "Hydrosphere", value = String.format("%.1f %% H₂O", planetary.hydrospherePercent))
-                    MetricRow(label = "Ocean pH", value = String.format("%.2f (%s)", planetary.oceanPh, if (planetary.oceanPh < 7.2f) "Acidic" else "Alkaline"))
+                    MetricRow(label = "Air Pressure", value = String.format("%.2f bar", planetary.surfacePressureBar))
+                    MetricRow(label = "Ocean Coverage", value = String.format("%.1f %% water", planetary.hydrospherePercent))
+                    MetricRow(label = "Ocean Acidity", value = String.format("%.2f (%s)", planetary.oceanPh, if (planetary.oceanPh < 7.2f) "Acidic" else "Alkaline"))
                     MetricRow(
-                        label = "Ice Albedo Coverage",
+                        label = "Ice Coverage",
                         value = String.format("%.0f %%", planetary.iceAlbedoCoverage * 100f),
                         valueColor = if (planetary.isSnowballEarth) PixelSnow else PaleText
                     )
@@ -102,7 +102,7 @@ fun PlanetaryDrawer(
             }
 
             // Atmospheric Chromatograph Card (Pixel style)
-            PixelTelemetryCard(title = "GAS CHROMATOGRAPHY") {
+            PixelTelemetryCard(title = "💨 WHAT'S IN THE AIR") {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     // Chromatograph segmented pixel bar
                     Row(
@@ -129,20 +129,20 @@ fun PlanetaryDrawer(
             }
 
             // Geodynamics & Magnetosphere Card
-            PixelTelemetryCard(title = "GEODYNAMICS & DYNAMO") {
+            PixelTelemetryCard(title = "🌋 PLANET CORE & VOLCANOES") {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     MetricRow(
-                        label = "Geomagnetic Dynamo",
+                        label = "Magnetic Shield",
                         value = "${planetary.magnetosphereMicroTesla.toInt()} μT",
                         valueColor = if (planetary.isMagnetosphereShielded) PixelCyan else PixelCrimson
                     )
                     MetricRow(
-                        label = "Solar Wind Stripping",
+                        label = "Air Being Blown Away",
                         value = if (planetary.solarWindStripping) "ALERT: STRIPPING" else "SHIELDED",
                         valueColor = if (planetary.solarWindStripping) PixelCrimson else PixelEmerald
                     )
                     MetricRow(
-                        label = "Mantle Convection",
+                        label = "Volcano & Plate Activity",
                         value = if (planetary.mantleConvectionActive) "Active" else "Frozen"
                     )
 
@@ -161,7 +161,7 @@ fun PlanetaryDrawer(
                     ) {
                         Text(
                             text = if (planetary.volcanicActivityIndex > 0.5f) "MANTLE PLUMES: HIGH" else "MANTLE PLUMES: DORMANT",
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             color = if (planetary.volcanicActivityIndex > 0.5f) PixelVoid else PaleText,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace
@@ -193,7 +193,7 @@ private fun PixelTelemetryCard(
             Text(
                 text = title,
                 color = PixelCyan,
-                fontSize = 10.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.ExtraBold,
                 fontFamily = FontFamily.Monospace,
                 letterSpacing = 0.5.sp
@@ -214,11 +214,11 @@ private fun MetricRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = label, color = MutedText, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+        Text(text = label, color = MutedText, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
         Text(
             text = value,
             color = valueColor,
-            fontSize = 10.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.Monospace
         )
@@ -245,12 +245,12 @@ private fun GasRow(
                     .size(6.dp)
                     .background(color)
             )
-            Text(text = name, color = PaleText, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+            Text(text = name, color = PaleText, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
         }
         Text(
             text = value,
             color = color,
-            fontSize = 10.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.Monospace
         )

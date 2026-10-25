@@ -63,7 +63,7 @@ fun CladeDrawer(
                         .background(PixelEmerald)
                 )
                 Text(
-                    text = "CLADE & ECOSYSTEM",
+                    text = "🐾 LIFE ON THIS PLANET",
                     color = PixelGold,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -109,7 +109,7 @@ fun CladeDrawer(
                                 Text(
                                     text = if (selectedClade.isExtinct) "EXTINCT" else "EXTANT",
                                     color = if (selectedClade.isExtinct) PixelCrimson else Color(selectedClade.trophicLevel.colorHex),
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     fontFamily = FontFamily.Monospace
                                 )
@@ -119,7 +119,7 @@ fun CladeDrawer(
                         Text(
                             text = selectedClade.trophicLevel.label,
                             color = Color(selectedClade.trophicLevel.colorHex),
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace
                         )
@@ -137,8 +137,8 @@ fun CladeDrawer(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Fitness Index", color = MutedText, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
-                                Text(String.format("%.2f", selectedClade.meanFitness), color = PixelCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                                Text("Survival Score", color = MutedText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                                Text(String.format("%.2f", selectedClade.meanFitness), color = PixelCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                             }
                             LinearProgressIndicator(
                                 progress = { selectedClade.meanFitness.coerceIn(0f, 1f) },
@@ -172,9 +172,9 @@ fun CladeDrawer(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                text = "ANATOMICAL X-RAY",
+                                text = "🦴 LOOK INSIDE",
                                 color = OnPrimary,
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontFamily = FontFamily.Monospace
                             )
@@ -197,9 +197,9 @@ fun CladeDrawer(
                     verticalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Text(
-                        text = "DOMINANT LINEAGES",
+                        text = "BIGGEST FAMILIES OF LIFE",
                         color = PixelCyan,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace
                     )
@@ -241,7 +241,7 @@ fun CladeDrawer(
                                     Text(
                                         text = clade.phylum.label,
                                         color = MutedText,
-                                        fontSize = 9.sp,
+                                        fontSize = 11.sp,
                                         fontFamily = FontFamily.Monospace
                                     )
                                 }
@@ -249,7 +249,7 @@ fun CladeDrawer(
                             Text(
                                 text = String.format("%.1e t", clade.biomassTons),
                                 color = PixelEmerald,
-                                fontSize = 9.sp,
+                                fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace
                             )
                         }
@@ -271,15 +271,15 @@ fun CladeDrawer(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "VIEWPORT OVERLAYS",
+                        text = "MAP LAYERS (tap to switch on/off)",
                         color = PixelCyan,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.ExtraBold,
                         fontFamily = FontFamily.Monospace
                     )
 
                     PixelOverlayToggleRow(
-                        title = "Biomass Heatmap",
+                        title = "Where Life Lives (heat map)",
                         checked = state.overlays.showBiomassHeatmap,
                         color = PixelEmerald,
                         onToggle = onToggleBiomassHeatmap,
@@ -287,7 +287,7 @@ fun CladeDrawer(
                     )
 
                     PixelOverlayToggleRow(
-                        title = "Trophic Flow Vectors",
+                        title = "Who Eats Whom (arrows)",
                         checked = state.overlays.showTrophicFlowVectors,
                         color = PixelGold,
                         onToggle = onToggleTrophicFlow,
@@ -295,7 +295,7 @@ fun CladeDrawer(
                     )
 
                     PixelOverlayToggleRow(
-                        title = "Speciation Hotspots",
+                        title = "New Species Appearing (glow)",
                         checked = state.overlays.showSpeciationHotspots,
                         color = PixelPurple,
                         onToggle = onToggleSpeciationHotspots,
@@ -313,8 +313,8 @@ private fun CladeMetricRow(label: String, value: String) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, color = MutedText, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
-        Text(text = value, color = PaleText, fontSize = 9.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+        Text(text = label, color = MutedText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+        Text(text = value, color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -344,7 +344,7 @@ private fun PixelOverlayToggleRow(
                     .size(6.dp)
                     .background(if (checked) color else SubduedText)
             )
-            Text(text = title, color = if (checked) PaleText else MutedText, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+            Text(text = title, color = if (checked) PaleText else MutedText, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
         }
         Checkbox(
             checked = checked,

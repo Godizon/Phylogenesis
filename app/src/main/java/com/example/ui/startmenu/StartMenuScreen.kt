@@ -126,16 +126,16 @@ fun StartMenuScreen(
                 )
 
                 Text(
-                    text = "A DETERMINISTIC EVOLUTIONARY SANDBOX",
+                    text = "WATCH LIFE EVOLVE. PLAY GOD.",
                     color = PixelCyan,
-                    fontSize = 10.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace,
                     letterSpacing = 1.sp
                 )
 
                 Text(
-                    text = "16-BIT TILE WORLD • EVO-DEVO GRN • THERMODYNAMICS",
+                    text = "Start with microbes. Grow a whole planet of life.",
                     color = MutedText,
                     fontSize = 8.sp,
                     fontFamily = FontFamily.Monospace
@@ -146,7 +146,7 @@ fun StartMenuScreen(
 
             // Action Buttons (WorldBox Chunky Pixel Frames)
             PixelMenuButton(
-                text = "CONTINUE SIMULATION",
+                text = "▶ CONTINUE",
                 icon = Icons.Default.PlayArrow,
                 primaryColor = PixelEmerald,
                 onClick = onContinue,
@@ -154,7 +154,7 @@ fun StartMenuScreen(
             )
 
             PixelMenuButton(
-                text = "NEW SIMULATION / SEED",
+                text = "🌍 NEW WORLD",
                 icon = Icons.Default.Casino,
                 primaryColor = PixelGold,
                 onClick = { showSeedModal = true },
@@ -162,7 +162,7 @@ fun StartMenuScreen(
             )
 
             PixelMenuButton(
-                text = "INTERACTIVE TUTORIAL",
+                text = "❓ HOW TO PLAY",
                 icon = Icons.Default.School,
                 primaryColor = PixelCyan,
                 onClick = onStartTutorial,
@@ -170,7 +170,7 @@ fun StartMenuScreen(
             )
 
             PixelMenuButton(
-                text = "SETTINGS & DISPLAY",
+                text = "⚙️ SETTINGS",
                 icon = Icons.Default.Settings,
                 primaryColor = PixelPurple,
                 onClick = { showSettingsModal = true },
@@ -182,7 +182,7 @@ fun StartMenuScreen(
         Text(
             text = "PHYLOGENESIS v2.0 • BUILT WITH JETPACK COMPOSE",
             color = SubduedText,
-            fontSize = 9.sp,
+            fontSize = 11.sp,
             fontFamily = FontFamily.Monospace,
             modifier = Modifier
                 .align(Alignment.BottomCenter)

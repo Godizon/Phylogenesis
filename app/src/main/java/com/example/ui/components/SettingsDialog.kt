@@ -69,7 +69,7 @@ fun SettingsDialog(
                                 .background(PixelGold)
                         )
                         Text(
-                            text = "SYSTEM SETTINGS (16-BIT)",
+                            text = "⚙️ SETTINGS",
                             color = PixelGold,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -84,13 +84,13 @@ fun SettingsDialog(
                 }
 
                 // Audio Section
-                SettingsCategoryCard(title = "AUDIO & SOUNDSCAPE") {
+                SettingsCategoryCard(title = "🔊 SOUND") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Master Audio Volume", color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                            Text("Volume", color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
                             Text("${(settings.masterVolume * 100).toInt()}%", color = PixelCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                         }
                         Slider(
@@ -106,7 +106,7 @@ fun SettingsDialog(
                         )
 
                         SettingsToggleRow(
-                            label = "Procedural Audio Synthesizer",
+                            label = "Sound Effects & Music",
                             checked = settings.audioEnabled,
                             onToggle = { onUpdateSettings(settings.copy(audioEnabled = !settings.audioEnabled)) }
                         )
@@ -114,28 +114,28 @@ fun SettingsDialog(
                 }
 
                 // Graphics & Visual Indicators
-                SettingsCategoryCard(title = "GRAPHICS & FULL-SCREEN HUD") {
+                SettingsCategoryCard(title = "🖼️ SCREEN") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         SettingsToggleRow(
-                            label = "On-Screen Pixel Mini-Map Radar",
+                            label = "Mini-Map",
                             checked = settings.showMiniMap,
                             onToggle = { onUpdateSettings(settings.copy(showMiniMap = !settings.showMiniMap)) }
                         )
 
                         SettingsToggleRow(
-                            label = "Active Tool Status Indicator",
+                            label = "Tool Badge",
                             checked = settings.showActiveToolPill,
                             onToggle = { onUpdateSettings(settings.copy(showActiveToolPill = !settings.showActiveToolPill)) }
                         )
 
                         SettingsToggleRow(
-                            label = "Climate News Alert Ticker",
+                            label = "News Ticker",
                             checked = settings.showClimateTicker,
                             onToggle = { onUpdateSettings(settings.copy(showClimateTicker = !settings.showClimateTicker)) }
                         )
 
                         SettingsToggleRow(
-                            label = "Coastal Wave Foam Animation",
+                            label = "Animated Waves",
                             checked = settings.coastalFoamAnimation,
                             onToggle = { onUpdateSettings(settings.copy(coastalFoamAnimation = !settings.coastalFoamAnimation)) }
                         )
@@ -152,11 +152,11 @@ fun SettingsDialog(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Pixel Grid Resolution", color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                            Text("Pixel Size", color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
                             Text(
                                 text = if (settings.pixelTileSize > 10f) "CHUNKY (14px)" else "DETAILED (8px)",
                                 color = PixelGold,
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace
                             )
@@ -165,10 +165,10 @@ fun SettingsDialog(
                 }
 
                 // Gameplay & Simulation
-                SettingsCategoryCard(title = "GAMEPLAY & SIMULATION") {
+                SettingsCategoryCard(title = "🎮 GAMEPLAY") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         SettingsToggleRow(
-                            label = "Auto-Pause on Cataclysms",
+                            label = "Pause When Disasters Hit",
                             checked = settings.autoPauseOnCataclysm,
                             onToggle = { onUpdateSettings(settings.copy(autoPauseOnCataclysm = !settings.autoPauseOnCataclysm)) }
                         )
@@ -212,7 +212,7 @@ fun SettingsDialog(
                     ) {
                         Icon(Icons.Default.School, contentDescription = null, tint = PixelVoid, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("RESTART INTERACTIVE TUTORIAL", color = PixelVoid, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
+                        Text("REPLAY HOW-TO-PLAY", color = PixelVoid, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
                     }
 
                     Button(
@@ -230,7 +230,7 @@ fun SettingsDialog(
                     ) {
                         Icon(Icons.Default.Home, contentDescription = null, tint = PaleText, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("RETURN TO START MENU", color = PaleText, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                        Text("RETURN TO START MENU", color = PaleText, fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     }
                 }
             }
@@ -258,7 +258,7 @@ private fun SettingsCategoryCard(
             Text(
                 text = title,
                 color = PixelCyan,
-                fontSize = 10.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.ExtraBold,
                 fontFamily = FontFamily.Monospace
             )

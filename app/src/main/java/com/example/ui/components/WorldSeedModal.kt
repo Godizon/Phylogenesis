@@ -70,7 +70,7 @@ fun WorldSeedModal(
                                 .background(PixelGold)
                         )
                         Text(
-                            text = "WORLD SEED GENERATOR",
+                            text = "🌍 CREATE A NEW WORLD",
                             color = PixelGold,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -86,7 +86,7 @@ fun WorldSeedModal(
 
                 // Seed Input with Dice Randomizer
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("PLANETARY SEED", color = PixelCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Text("WORLD CODE (same code = same world)", color = PixelCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -120,7 +120,7 @@ fun WorldSeedModal(
 
                 // Star Type Selection
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("HOST STAR CLASSIFICATION", color = PixelCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Text("WHAT KIND OF SUN?", color = PixelCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -163,25 +163,25 @@ fun WorldSeedModal(
 
                 // Starting Climate Preset
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("STARTING BIOSPHERE PRESET", color = PixelCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Text("HOW SHOULD LIFE START?", color = PixelCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
 
                     PresetOption(
-                        title = "Primordial Broth (Archean Analog)",
-                        subtitle = "High CO₂ & CH₄, boiling hydrothermal vents, chemoliths",
+                        title = "🦠 Primordial Soup",
+                        subtitle = "Hot, gassy oceans with volcanic vents. Start from scratch.",
                         isSelected = selectedPreset == "PRIMORDIAL_BROTH",
                         onSelect = { selectedPreset = "PRIMORDIAL_BROTH" }
                     )
 
                     PresetOption(
-                        title = "Oxygenated Seas (Cambrian Explosion)",
-                        subtitle = "Cyanobacteria bloom, early trilobites & apex swimmers",
+                        title = "🐚 Oxygen Seas",
+                        subtitle = "Oxygen-rich oceans, ready for animals to burst into new shapes.",
                         isSelected = selectedPreset == "OXYGENATED_SEAS",
                         onSelect = { selectedPreset = "OXYGENATED_SEAS" }
                     )
 
                     PresetOption(
-                        title = "Tidally Locked Eyeball World",
-                        subtitle = "1:1 spin-orbit lock around red dwarf, habitable twilight ribbon",
+                        title = "👁️ Eyeball World",
+                        subtitle = "One side always faces its sun. Life survives in the twilight ring.",
                         isSelected = selectedPreset == "EYEBALL_WORLD",
                         onSelect = {
                             selectedPreset = "EYEBALL_WORLD"
@@ -190,15 +190,15 @@ fun WorldSeedModal(
                     )
 
                     PresetOption(
-                        title = "Super-Earth System (2.5g Gravity)",
-                        subtitle = "3.2 bar dense atmosphere, severe skeletal stress & flat fauna",
+                        title = "🪨 Heavy Giant Planet",
+                        subtitle = "Crushing gravity and thick air. Creatures stay low and flat.",
                         isSelected = selectedPreset == "SUPER_EARTH",
                         onSelect = { selectedPreset = "SUPER_EARTH" }
                     )
 
                     PresetOption(
-                        title = "Cryogenic Snowball World",
-                        subtitle = "Albedo runaway at 58% ice, extreme geothermal oases",
+                        title = "❄️ Snowball World",
+                        subtitle = "Mostly ice. Life clings to warm volcanic oases.",
                         isSelected = selectedPreset == "SNOWBALL_WORLD",
                         onSelect = { selectedPreset = "SNOWBALL_WORLD" }
                     )
@@ -223,7 +223,7 @@ fun WorldSeedModal(
                     Icon(Icons.Default.Public, contentDescription = null, tint = OnPrimary, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "SPAWN NEW PLANETARY SANDBOX",
+                        text = "🚀 START THIS WORLD",
                         color = OnPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -266,7 +266,7 @@ private fun PresetOption(
             Text(
                 text = subtitle,
                 color = MutedText,
-                fontSize = 9.sp,
+                fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             )
         }

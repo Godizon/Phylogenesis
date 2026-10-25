@@ -2,6 +2,7 @@ package com.example.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +27,11 @@ import com.example.ui.components.*
 import com.example.ui.theme.*
 import com.example.ui.viewport.SimulationViewport
 import com.example.viewmodel.PhylogenesisViewModel
+import kotlinx.coroutines.delay
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextAlign
+import com.example.model.CataclysmType
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +46,46 @@ fun PhylogenesisScreen(
 
     var showLeftTelemetry by remember { mutableStateOf(false) }
     var showRightClades by remember { mutableStateOf(false) }
+    var infoEntry by remember { mutableStateOf<InfoEntry?>(null) }
+    var showTimeTravel by remember { mutableStateOf(false) }
+    var coachDismissed by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { delay(20_000); coachDismissed = true }
+
+    // ---- Disaster effects: screen shake, color flash, and a "what just happened" result card ----
+    var fxType by remember { mutableStateOf<CataclysmType?>(null) }
+    var fxBefore by remember { mutableStateOf(0.0) }
+    var fxResult by remember { mutableStateOf<String?>(null) }
+    var shakeX by remember { mutableStateOf(0f) }
+    var shakeY by remember { mutableStateOf(0f) }
+    val latestState by rememberUpdatedState(state)
+    val flashAlpha by animateFloatAsState(
+        targetValue = if (fxType != null) 0.38f else 0f,
+        animationSpec = androidx.compose.animation.core.tween(350),
+        label = "disaster_flash"
+    )
+    val fireDisaster: (CataclysmType) -> Unit = { type ->
+        fxBefore = state.totalBiomassTons
+        fxResult = null
+        fxType = type
+        viewModel.triggerCataclysm(type)
+    }
+    LaunchedEffect(fxType) {
+        val type = fxType ?: return@LaunchedEffect
+        val steps = 40
+        for (i in 0 until steps) {
+            val strength = 26f * (1f - i / steps.toFloat())
+            shakeX = (Random.nextFloat() - 0.5f) * strength
+            shakeY = (Random.nextFloat() - 0.5f) * strength
+            delay(35)
+        }
+        shakeX = 0f; shakeY = 0f
+        val before = fxBefore
+        val after = latestState.totalBiomassTons
+        val lost = if (before > 0.0) ((before - after) / before * 100.0).coerceIn(0.0, 100.0) else 0.0
+        val f = type.friendly
+        fxType = null
+        fxResult = "${f.emoji} ${f.name}!  About ${lost.toInt()}% of all life was wiped out.\n\n${type.evolutionaryConsequence}"
+    }
 
     // System Back Handler for closing drawers/modals correctly
     BackHandler(
@@ -72,13 +118,14 @@ fun PhylogenesisScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .graphicsLayer { translationX = shakeX; translationY = shakeY }
         ) {
             // 1. Full-Screen Immersive Simulation Viewport (Maximum viewing area)
             SimulationViewport(
                 state = state,
                 onZoomIn = { viewModel.zoomIn() },
                 onZoomOut = { viewModel.zoomOut() },
-                onSelectSpecimen = { viewModel.selectSpecimen(it) },
+                onSelectSpecimen = { coachDismissed = true; viewModel.selectSpecimen(it) },
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -89,18 +136,7 @@ fun PhylogenesisScreen(
                     state = state,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(start = 48.dp, end = 48.dp, top = 74.dp)
-                )
-            }
-
-            // Top Left: Active Tool Indicator
-            if (!immersiveHideHud && settings.showActiveToolPill) {
-                ActiveToolIndicator(
-                    mode = state.mode,
-                    activeCataclysm = state.activeCataclysm,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(top = 74.dp, start = 12.dp)
+                        .padding(start = 56.dp, end = 56.dp, top = 118.dp)
                 )
             }
 
@@ -111,7 +147,7 @@ fun PhylogenesisScreen(
                     activeCataclysm = state.activeCataclysm,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(start = 12.dp, bottom = 80.dp)
+                        .padding(start = 12.dp, bottom = 124.dp)
                 )
             }
 
@@ -119,6 +155,7 @@ fun PhylogenesisScreen(
             Column(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
+                    .offset(y = 84.dp)
                     .padding(end = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -222,17 +259,16 @@ fun PhylogenesisScreen(
                     .padding(7.dp)
                     .testTag("toggle_left_telemetry")
             ) {
-                Icon(
-                    imageVector = if (showLeftTelemetry) Icons.Default.ChevronLeft else Icons.Default.Public,
-                    contentDescription = "Toggle Planetary Telemetry",
-                    tint = PixelCyan,
-                    modifier = Modifier.size(18.dp)
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(if (showLeftTelemetry) "◀" else "🌍", fontSize = 20.sp, color = PixelCyan)
+                    if (!showLeftTelemetry) Text("Planet", color = PixelCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
             }
 
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
+                    .offset(y = (-40).dp)
                     .padding(end = if (showRightClades) 286.dp else 8.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(PixelPanelLight)
@@ -241,12 +277,10 @@ fun PhylogenesisScreen(
                     .padding(7.dp)
                     .testTag("toggle_right_clades")
             ) {
-                Icon(
-                    imageVector = if (showRightClades) Icons.Default.ChevronRight else Icons.Default.Hub,
-                    contentDescription = "Toggle Clade & Ecosystem",
-                    tint = PixelEmerald,
-                    modifier = Modifier.size(18.dp)
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(if (showRightClades) "▶" else "🐾", fontSize = 20.sp, color = PixelEmerald)
+                    if (!showRightClades) Text("Life", color = PixelEmerald, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
             }
 
             // System Alert Banner
@@ -254,7 +288,7 @@ fun PhylogenesisScreen(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 74.dp)
+                        .padding(top = 118.dp)
                         .fillMaxWidth(0.92f)
                         .clip(RoundedCornerShape(4.dp))
                         .background(PixelCrimson)
@@ -297,10 +331,9 @@ fun PhylogenesisScreen(
                     state = state,
                     onTogglePlayPause = { viewModel.togglePlayPause() },
                     onSetSpeed = { viewModel.setTimeSpeed(it) },
-                    onToggleMode = { viewModel.toggleMode() },
                     onToggleAudio = { viewModel.toggleAudio() },
-                    onOpenCladogram = { viewModel.setCladogramModalVisible(true) },
-                    onOpenSettings = { viewModel.setShowSettingsModal(true) }
+                    onOpenSettings = { viewModel.setShowSettingsModal(true) },
+                    onShowInfo = { infoEntry = it }
                 )
             }
 
@@ -311,13 +344,13 @@ fun PhylogenesisScreen(
                 exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                TimelineBar(
-                    state = state,
-                    onWarpToEpoch = { viewModel.warpToEpoch(it) },
-                    onSelectScale = { viewModel.setScale(it) },
-                    onOpenGodTools = { viewModel.setGodToolsSheetVisible(true) },
-                    onOpenCladogram = { viewModel.setCladogramModalVisible(true) },
-                    onOpenGeneEditor = { viewModel.setShowGeneEditorModal(true) }
+                PowersDock(
+                    onTriggerCataclysm = fireDisaster,
+                    onOpenGeneLab = { viewModel.setShowGeneEditorModal(true) },
+                    onOpenTree = { viewModel.setCladogramModalVisible(true) },
+                    onOpenTimeTravel = { showTimeTravel = true },
+                    onOpenPlanetControls = { viewModel.setGodToolsSheetVisible(true) },
+                    onShowInfo = { infoEntry = it }
                 )
             }
 
@@ -359,7 +392,7 @@ fun PhylogenesisScreen(
                     onInjectGas = { co2, o2, ch4 -> viewModel.updateAtmosphere(co2, o2, ch4) },
                     onToggleVolcanism = { viewModel.toggleVolcanism() },
                     onMutateSpecimen = { viewModel.mutateSelectedSpecimen() },
-                    onTriggerCataclysm = { viewModel.triggerCataclysm(it) }
+                    onTriggerCataclysm = fireDisaster
                 )
             }
 
@@ -379,6 +412,69 @@ fun PhylogenesisScreen(
                     onDismiss = { viewModel.setShowSettingsModal(false) }
                 )
             }
+
+            // Disaster flash + big emoji
+            if (flashAlpha > 0.01f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background((fxType?.let { Color(it.colorHex) } ?: Color.White).copy(alpha = flashAlpha)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(fxType?.friendly?.emoji ?: "", fontSize = 110.sp)
+                }
+            }
+
+            // What-just-happened card
+            fxResult?.let { msg ->
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(PixelPanel)
+                        .border(2.dp, PixelCrimson, RoundedCornerShape(18.dp))
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(msg, color = PaleText, fontSize = 15.sp, lineHeight = 21.sp)
+                    Text(
+                        if (state.isPaused) "▶ Keep going" else "OK",
+                        color = OnPrimary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(PixelCyan)
+                            .clickable {
+                                fxResult = null
+                                if (state.isPaused) viewModel.togglePlayPause()
+                            }
+                            .padding(vertical = 10.dp)
+                    )
+                }
+            }
+
+            // First-time coach hint
+            if (!immersiveHideHud && !coachDismissed && !tutorialState.isActive) {
+                CoachHint(
+                    onClick = { coachDismissed = true; infoEntry = Glossary.creature },
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 128.dp)
+                )
+            }
+
+            if (showTimeTravel) {
+                TimeTravelDialog(
+                    current = state.currentEpoch,
+                    onPick = { viewModel.warpToEpoch(it) },
+                    onDismiss = { showTimeTravel = false }
+                )
+            }
+
+            infoEntry?.let { InfoDialog(entry = it, onDismiss = { infoEntry = null }) }
 
             // Interactive Spotlight Tutorial Overlay
             if (tutorialState.isActive) {

@@ -64,7 +64,7 @@ fun SpecimenInspector(
                 ) {
                     Column {
                         Text(
-                            text = "ANATOMICAL X-RAY (16-BIT)",
+                            text = "🦴 INSIDE THIS CREATURE",
                             color = PixelGold,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -106,9 +106,9 @@ fun SpecimenInspector(
                     )
 
                     Text(
-                        text = "LIVE PIXEL IK & VASCULAR MONITOR",
+                        text = "Live view: bones, muscles & blood flow",
                         color = PixelCyan.copy(alpha = 0.6f),
-                        fontSize = 9.sp,
+                        fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
                         modifier = Modifier
                             .align(Alignment.BottomStart)
@@ -130,9 +130,9 @@ fun SpecimenInspector(
                         verticalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "PHYSIOLOGY & BIOMECHANICAL STRESS",
+                            text = "HOW HEALTHY IS ITS BODY?",
                             color = PixelGold,
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.ExtraBold,
                             fontFamily = FontFamily.Monospace
                         )
@@ -150,11 +150,11 @@ fun SpecimenInspector(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Skeletal Yield Stress (Square-Cube Limit)", color = MutedText, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+                                Text("Bone Strain (too high = bones can't hold its weight)", color = MutedText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
                                 Text(
                                     "${specimen.biomechanics.skeletalYieldStressPercent.toInt()}%",
                                     color = if (specimen.biomechanics.skeletalYieldStressPercent > 80f) PixelCrimson else PixelEmerald,
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     fontFamily = FontFamily.Monospace
                                 )
@@ -191,16 +191,16 @@ fun SpecimenInspector(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "EXPRESSED vDNA CODONS",
+                                text = "ACTIVE GENES",
                                 color = PixelPurple,
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontFamily = FontFamily.Monospace
                             )
                             Text(
-                                text = "${specimen.activeCodons.size} CODONS",
+                                text = "${specimen.activeCodons.size} GENES",
                                 color = PixelGold,
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontFamily = FontFamily.Monospace
                             )
                         }
@@ -214,9 +214,9 @@ fun SpecimenInspector(
                         }
 
                         Text(
-                            text = "Hox Metameres: ${specimen.segments.size} Segments (${specimen.segments.count { it.limbPairCount > 0 }} with Locomotive Appendages)",
+                            text = "Body Segments: ${specimen.segments.size} (${specimen.segments.count { it.limbPairCount > 0 }} with legs or fins)",
                             color = MutedText,
-                            fontSize = 10.sp,
+                            fontSize = 12.sp,
                             fontFamily = FontFamily.Monospace
                         )
                     }
@@ -244,8 +244,8 @@ fun SpecimenInspector(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "OPEN vDNA GENE LAB (MORPHOGENESIS)",
-                        fontSize = 10.sp,
+                        text = "🧪 REDESIGN THIS CREATURE",
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = OnPrimary,
                         fontFamily = FontFamily.Monospace
@@ -271,8 +271,8 @@ fun SpecimenInspector(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "TRIGGER RETROVIRAL MUTATION (NEO-FUNCTIONALIZATION)",
-                        fontSize = 10.sp,
+                        text = "🎲 MUTATE IT! (random change)",
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         fontFamily = FontFamily.Monospace
@@ -289,8 +289,8 @@ private fun DiagnosticMetric(label: String, value: String) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, color = MutedText, fontSize = 9.sp, fontFamily = FontFamily.Monospace)
-        Text(text = value, color = PaleText, fontSize = 9.sp, fontWeight = FontWeight.Medium, fontFamily = FontFamily.Monospace)
+        Text(text = label, color = MutedText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+        Text(text = value, color = PaleText, fontSize = 11.sp, fontWeight = FontWeight.Medium, fontFamily = FontFamily.Monospace)
     }
 }
 
@@ -307,7 +307,7 @@ private fun CodonPill(codon: CodonType) {
             Text(
                 text = codon.code,
                 color = PixelPurple,
-                fontSize = 10.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace
             )

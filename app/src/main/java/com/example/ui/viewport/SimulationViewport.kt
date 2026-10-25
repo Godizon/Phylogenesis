@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.example.model.CosmicScale
 import com.example.model.OrganismPhenotype
 import com.example.model.SimulationState
+import com.example.ui.components.friendly
 import com.example.ui.theme.*
 
 @Composable
@@ -76,46 +77,26 @@ fun SimulationViewport(
             }
         }
 
-        // Top Left: WorldBox Chunky Pixel Scale Badge
+        // Bottom right: friendly view badge (plain names instead of powers-of-ten jargon)
         Box(
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .align(Alignment.BottomEnd)
                 .padding(10.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(PixelPanel)
-                .border(2.dp, PixelBorderLight, RoundedCornerShape(4.dp))
+                .padding(bottom = 108.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(PixelPanel.copy(alpha = 0.9f))
+                .border(1.5.dp, PixelBorderLight, RoundedCornerShape(12.dp))
                 .padding(horizontal = 10.dp, vertical = 6.dp)
         ) {
+            val f = state.currentScale.friendly
             Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .background(PixelCyan)
-                    )
-                    Text(
-                        text = state.currentScale.meterScale,
-                        color = PixelCyan,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Text(
-                        text = "• ${state.currentScale.title.uppercase()}",
-                        color = PaleText,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
                 Text(
-                    text = state.currentScale.subtitle,
-                    color = MutedText,
-                    fontSize = 9.sp
+                    text = "${f.emoji} ${f.name}",
+                    color = PaleText,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
+                Text(text = f.blurb, color = MutedText, fontSize = 11.sp)
             }
         }
 
@@ -123,7 +104,8 @@ fun SimulationViewport(
         Column(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(10.dp),
+                .padding(10.dp)
+                .padding(top = 108.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             PixelSquareButton(

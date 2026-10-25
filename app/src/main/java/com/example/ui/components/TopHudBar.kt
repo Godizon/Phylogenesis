@@ -5,317 +5,171 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.model.PlayerInterventionMode
 import com.example.model.SimulationState
 import com.example.ui.theme.*
 
+/**
+ * Slim, plain-language HUD.
+ * Row 1: what time period is it + play/speed/sound/settings.
+ * Row 2: three tappable stat tiles (Life, Species, Shield). Tap any of them to learn what it means.
+ */
 @Composable
 fun TopHudBar(
     state: SimulationState,
     onTogglePlayPause: () -> Unit,
     onSetSpeed: (Float) -> Unit,
-    onToggleMode: () -> Unit,
     onToggleAudio: () -> Unit,
-    onOpenCladogram: () -> Unit,
     onOpenSettings: () -> Unit,
+    onShowInfo: (InfoEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val epoch = state.currentEpoch
+    val speed = state.timeSpeedMaPerSec
+    val speedLabel = when {
+        speed >= 50f -> "100x"
+        speed >= 5f -> "10x"
+        else -> "1x"
+    }
+    val nextSpeed = when {
+        speed >= 50f -> 1f
+        speed >= 5f -> 100f
+        else -> 10f
+    }
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .testTag("top_hud_bar"),
-        color = PixelVoid,
-        tonalElevation = 6.dp
+        color = PixelPanel.copy(alpha = 0.94f)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(width = 2.dp, color = PixelBorderDark)
-                .background(PixelPanel)
-                .padding(horizontal = 10.dp, vertical = 6.dp)
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Left: Epoch and Deep Time (Pixel Badge)
+                // Era + how long ago
                 Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { onShowInfo(Glossary.era) }
+                        .padding(vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(PixelVoid)
-                            .border(2.dp, PixelCyan, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = state.currentEpoch.title.uppercase(),
-                            color = PixelCyan,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
-
+                    Text(epoch.emoji, fontSize = 26.sp)
                     Column {
                         Text(
-                            text = state.formattedTime,
+                            epoch.friendlyName,
                             color = PixelGold,
-                            fontSize = 15.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            fontFamily = FontFamily.Monospace
+                            maxLines = 1
                         )
                         Text(
-                            text = state.currentEpoch.rangeStr,
+                            formatYearsAgo(state.currentTimeGa),
                             color = MutedText,
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace
+                            fontSize = 12.sp,
+                            maxLines = 1
                         )
                     }
                 }
 
-                // Center: Retro Pixel Speed Controls
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(PixelVoid)
-                        .border(2.dp, PixelBorderLight, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                ) {
-                    IconButton(
-                        onClick = onTogglePlayPause,
-                        modifier = Modifier
-                            .size(30.dp)
-                            .testTag("btn_play_pause")
-                    ) {
-                        Icon(
-                            imageVector = if (state.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
-                            contentDescription = if (state.isPaused) "Resume" else "Pause",
-                            tint = if (state.isPaused) PixelGold else PixelCyan,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-
-                    PixelSpeedPill(
-                        label = "1x",
-                        isSelected = !state.isPaused && state.timeSpeedMaPerSec == 1.0f,
-                        onClick = { onSetSpeed(1.0f) },
-                        testTag = "speed_1x"
-                    )
-
-                    PixelSpeedPill(
-                        label = "10x",
-                        isSelected = !state.isPaused && state.timeSpeedMaPerSec == 10.0f,
-                        onClick = { onSetSpeed(10.0f) },
-                        testTag = "speed_10x"
-                    )
-
-                    PixelSpeedPill(
-                        label = "100x",
-                        isSelected = !state.isPaused && state.timeSpeedMaPerSec == 100.0f,
-                        onClick = { onSetSpeed(100.0f) },
-                        testTag = "speed_100x"
-                    )
-                }
-
-                // Right: Mode and Action Buttons (WorldBox square style)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    // Mode Toggle
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(
-                                if (state.mode == PlayerInterventionMode.ARCHITECT)
-                                    PixelPurple.copy(alpha = 0.35f)
-                                else
-                                    PixelEmerald.copy(alpha = 0.25f)
-                            )
-                            .border(
-                                2.dp,
-                                if (state.mode == PlayerInterventionMode.ARCHITECT) PixelPurple else PixelEmerald,
-                                RoundedCornerShape(4.dp)
-                            )
-                            .clickable { onToggleMode() }
-                            .padding(horizontal = 8.dp, vertical = 5.dp)
-                            .testTag("toggle_game_mode")
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (state.mode == PlayerInterventionMode.ARCHITECT)
-                                    Icons.Default.Bolt
-                                else
-                                    Icons.Default.Visibility,
-                                contentDescription = null,
-                                tint = if (state.mode == PlayerInterventionMode.ARCHITECT) PixelPurple else PixelEmerald,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = if (state.mode == PlayerInterventionMode.ARCHITECT) "ARCHITECT" else "NATURALIST",
-                                color = PaleText,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
-                            )
-                        }
-                    }
-
-                    // Tree of Life / Cladogram Button
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(PixelPanelLight)
-                            .border(2.dp, PixelBorderLight, RoundedCornerShape(4.dp))
-                            .clickable { onOpenCladogram() }
-                            .testTag("open_cladogram_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AccountTree,
-                            contentDescription = "Tree of Life Cladogram",
-                            tint = PixelCyan,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-
-                    // Audio Toggle Button
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(PixelPanelLight)
-                            .border(2.dp, PixelBorderLight, RoundedCornerShape(4.dp))
-                            .clickable { onToggleAudio() }
-                            .testTag("toggle_audio_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (state.audioEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
-                            contentDescription = if (state.audioEnabled) "Mute Audio" else "Unmute Audio",
-                            tint = if (state.audioEnabled) PixelCyan else MutedText,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-
-                    // Settings Button
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(PixelPanelLight)
-                            .border(2.dp, PixelBorderLight, RoundedCornerShape(4.dp))
-                            .clickable { onOpenSettings() }
-                            .testTag("btn_open_settings"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Game Settings",
-                            tint = PixelGold,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                    HudButton(
+                        label = if (state.isPaused) "▶" else "⏸",
+                        accent = if (state.isPaused) PixelGold else PixelCyan,
+                        onClick = onTogglePlayPause,
+                        tag = "btn_play_pause"
+                    )
+                    HudButton(
+                        label = "⏩ $speedLabel",
+                        accent = PixelCyan,
+                        width = 66.dp,
+                        onClick = { onSetSpeed(nextSpeed) },
+                        tag = "btn_speed_cycle"
+                    )
+                    HudButton(
+                        label = if (state.audioEnabled) "🔊" else "🔇",
+                        accent = PixelBorderLight,
+                        onClick = onToggleAudio,
+                        tag = "toggle_audio_button"
+                    )
+                    HudButton(
+                        label = "⚙️",
+                        accent = PixelBorderLight,
+                        onClick = onOpenSettings,
+                        tag = "btn_open_settings"
+                    )
                 }
             }
 
-            // Sub-row: Telemetry strip with pixel badges
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text(
-                        text = "BIOMASS: ${state.formattedBiomass}",
-                        color = PixelEmerald,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Text(
-                        text = "TAXA: ${state.globalTaxonDiversityCount} CLADES",
-                        color = PixelCyan,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Text(
-                        text = "CORE: ${state.planetary.magnetosphereMicroTesla.toInt()} μT",
-                        color = if (state.planetary.isMagnetosphereShielded) PixelGold else PixelCrimson,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-
-                if (state.planetary.isSnowballEarth) {
-                    Text(
-                        text = "❄ SNOWBALL RUNAWAY",
-                        color = PixelSnow,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
+                StatChip(
+                    emoji = "🌱", label = "Life", value = state.formattedBiomass,
+                    accent = PixelEmerald,
+                    onClick = { onShowInfo(Glossary.life) },
+                    modifier = Modifier.weight(1f)
+                )
+                StatChip(
+                    emoji = "🧬", label = "Species", value = "${state.globalTaxonDiversityCount}",
+                    accent = PixelCyan,
+                    onClick = { onShowInfo(Glossary.species) },
+                    modifier = Modifier.weight(1f)
+                )
+                StatChip(
+                    emoji = "🛡️", label = "Shield",
+                    value = if (state.planetary.isMagnetosphereShielded) "Strong" else "Weak ⚠",
+                    accent = if (state.planetary.isMagnetosphereShielded) PixelGold else PixelCrimson,
+                    onClick = { onShowInfo(Glossary.shield) },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
 }
 
 @Composable
-private fun PixelSpeedPill(
+private fun HudButton(
     label: String,
-    isSelected: Boolean,
+    accent: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit,
-    testTag: String
+    tag: String,
+    width: Dp = 40.dp
 ) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(3.dp))
-            .background(if (isSelected) PixelCyan.copy(alpha = 0.35f) else Color.Transparent)
-            .border(
-                1.dp,
-                if (isSelected) PixelCyan else Color.Transparent,
-                RoundedCornerShape(3.dp)
-            )
+            .size(width = width, height = 40.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(PixelVoid)
+            .border(1.5.dp, accent, RoundedCornerShape(12.dp))
             .clickable { onClick() }
-            .padding(horizontal = 6.dp, vertical = 3.dp)
-            .testTag(testTag)
+            .testTag(tag),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = label,
-            color = if (isSelected) PixelCyan else MutedText,
-            fontSize = 11.sp,
-            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
-            fontFamily = FontFamily.Monospace
-        )
+        Text(label, color = PaleText, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1)
     }
 }

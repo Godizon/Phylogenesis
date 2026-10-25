@@ -16,7 +16,7 @@ data class GameSettings(
     val pixelTileSize: Float = 14f, // 14f for chunky 16-bit, 8f for fine
     val coastalFoamAnimation: Boolean = true,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
-    val autoPauseOnCataclysm: Boolean = true,
+    val autoPauseOnCataclysm: Boolean = false,
     val showMiniMap: Boolean = true,
     val showActiveToolPill: Boolean = true,
     val showClimateTicker: Boolean = true

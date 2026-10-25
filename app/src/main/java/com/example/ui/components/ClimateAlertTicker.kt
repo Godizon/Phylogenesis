@@ -30,11 +30,14 @@ fun ClimateAlertTicker(
     modifier: Modifier = Modifier
 ) {
     val message = when {
-        state.activeCataclysm != null -> "EXTINCTION IN PROGRESS: ${state.activeCataclysm.type.title.uppercase()}!"
-        state.planetary.isSnowballEarth -> "CRYOSPHERE RUNAWAY: Global ice coverage breaches 58% equator threshold!"
-        state.planetary.atmosphere.isOxidizing -> "GREAT OXIDATION EVENT: Oxygen photolysis transforming planetary chemistry."
-        state.planetary.surfaceTempCelsius > 35f -> "HYPERTHERMAL GREENHOUSE: Elevated atmospheric CO₂/CH₄ driving ocean warming."
-        else -> "ECOSYSTEM STEADY: ${state.globalTaxonDiversityCount} active taxa thriving in ${state.currentEpoch.title}."
+        state.activeCataclysm != null -> {
+            val f = state.activeCataclysm.type.friendly
+            "${f.emoji} ${f.name.uppercase()}! Life is in danger!"
+        }
+        state.planetary.isSnowballEarth -> "❄️ The whole planet is freezing over!"
+        state.planetary.atmosphere.isOxidizing -> "🫧 Oxygen is filling the air. Life is changing fast!"
+        state.planetary.surfaceTempCelsius > 35f -> "🔥 The planet is overheating. Oceans are getting warm."
+        else -> "🌿 All calm: ${state.globalTaxonDiversityCount} species living in the ${state.currentEpoch.friendlyName}."
     }
 
     val bannerColor = when {
@@ -61,15 +64,14 @@ fun ClimateAlertTicker(
                 imageVector = Icons.Default.Info,
                 contentDescription = null,
                 tint = PixelGold,
-                modifier = Modifier.size(12.dp)
+                modifier = Modifier.size(14.dp)
             )
             Text(
-                text = "TICKER: $message",
+                text = message,
                 color = PaleText,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = FontFamily.Monospace,
-                maxLines = 1
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2
             )
         }
     }

@@ -77,7 +77,7 @@ fun GodToolPanel(
                             .background(PixelPurple)
                     )
                     Text(
-                        text = "THE GOD-TOOL CATALOG",
+                        text = "🪐 PLANET CONTROLS",
                         color = PixelGold,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.ExtraBold,
@@ -93,7 +93,7 @@ fun GodToolPanel(
 
             // Section 1: TERRAFORM (Blue)
             PixelToolCategoryCard(
-                categoryTitle = "1. ASTROPHYSICAL & TERRAFORM DIALS",
+                categoryTitle = "🌍 SUN, TILT & AIR",
                 categoryColor = PixelCyan
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -103,7 +103,7 @@ fun GodToolPanel(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Orbital Semi-Major Axis", color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                            Text("Distance From Sun (closer = hotter)", color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
                             Text(
                                 String.format("%.2f AU", state.planetary.orbitalDistanceAU),
                                 color = PixelCyan,
@@ -131,7 +131,7 @@ fun GodToolPanel(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Axial Obliquity Tilt", color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                            Text("Planet Tilt (more tilt = bigger seasons)", color = PaleText, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
                             Text(
                                 String.format("%.1f°", state.planetary.axialTiltDeg),
                                 color = PixelCyan,
@@ -155,9 +155,9 @@ fun GodToolPanel(
 
                     // Atmospheric Gas Injections
                     Text(
-                        text = "Geochemical Synthesis Injections",
+                        text = "Add gases to the air",
                         color = PixelGold,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
                     )
@@ -173,7 +173,7 @@ fun GodToolPanel(
                             border = BorderStroke(1.dp, PixelGold),
                             modifier = Modifier.weight(1f).testTag("inject_co2")
                         ) {
-                            Text("+ CO₂", fontSize = 10.sp, color = PixelGold, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                            Text("+ CO₂ 🔥", fontSize = 12.sp, color = PixelGold, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = { onInjectGas(null, (state.planetary.atmosphere.o2Percent + 5f).coerceAtMost(35f), null) },
@@ -182,7 +182,7 @@ fun GodToolPanel(
                             border = BorderStroke(1.dp, PixelEmerald),
                             modifier = Modifier.weight(1f).testTag("inject_o2")
                         ) {
-                            Text("+ O₂", fontSize = 10.sp, color = PixelEmerald, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                            Text("+ O₂ 🫧", fontSize = 12.sp, color = PixelEmerald, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = { onInjectGas(null, null, state.planetary.atmosphere.ch4Ppm + 1000f) },
@@ -191,7 +191,7 @@ fun GodToolPanel(
                             border = BorderStroke(1.dp, PixelPurple),
                             modifier = Modifier.weight(1f).testTag("inject_ch4")
                         ) {
-                            Text("+ CH₄", fontSize = 10.sp, color = PixelPurple, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                            Text("+ CH₄ 💨", fontSize = 12.sp, color = PixelPurple, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -199,12 +199,12 @@ fun GodToolPanel(
 
             // Section 2: MUTAGENIC VECTORS (Purple)
             PixelToolCategoryCard(
-                categoryTitle = "2. MUTAGENIC & INTERVENTIONIST VECTORS",
+                categoryTitle = "🧬 EVOLVE A CREATURE",
                 categoryColor = PixelPurple
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Targeted Retroviral & Cosmic Ray Insertion into: ${state.selectedSpecimen?.binomialName ?: "Specimen"}",
+                        text = "Randomly change the genes of: ${state.selectedSpecimen?.binomialName ?: "Specimen"}",
                         color = MutedText,
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace
@@ -228,7 +228,7 @@ fun GodToolPanel(
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = "INJECT RETROVIRAL MUTAGEN (vDNA EDIT)",
+                            text = "🎲 MUTATE IT",
                             color = Color.White,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
@@ -240,7 +240,7 @@ fun GodToolPanel(
 
             // Section 3: CATACLYSMS & MASS EXTINCTIONS (Red)
             PixelToolCategoryCard(
-                categoryTitle = "3. MASS EXTINCTION CATACLYSM SCENARIOS",
+                categoryTitle = "💥 DISASTERS",
                 categoryColor = PixelCrimson
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -282,7 +282,7 @@ private fun PixelToolCategoryCard(
             Text(
                 text = categoryTitle,
                 color = categoryColor,
-                fontSize = 10.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.ExtraBold,
                 fontFamily = FontFamily.Monospace,
                 letterSpacing = 0.5.sp
@@ -323,14 +323,14 @@ private fun PixelCataclysmTriggerCard(
                 Text(
                     text = cataclysm.subtitle,
                     color = PaleText,
-                    fontSize = 10.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
                     text = cataclysm.primaryPhysics,
                     color = MutedText,
-                    fontSize = 9.sp,
+                    fontSize = 11.sp,
                     maxLines = 2,
                     fontFamily = FontFamily.Monospace
                 )
@@ -346,7 +346,7 @@ private fun PixelCataclysmTriggerCard(
             ) {
                 Text(
                     text = "UNLEASH",
-                    fontSize = 9.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
                     fontFamily = FontFamily.Monospace
