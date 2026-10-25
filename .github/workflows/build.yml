@@ -18,14 +18,39 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
       - name: Accept Android SDK Licenses
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Prepare .env and Debug Keystore
+      - name: Prepare Project and Wrapper
         run: |
+          # 1. If files were placed inside a subfolder, move them to root
+          if [ ! -f "settings.gradle.kts" ] && [ ! -f "build.gradle.kts" ]; then
+            SUBDIR=$(find . -maxdepth 2 -name "settings.gradle.kts" -exec dirname {} \; | head -n 1)
+            if [ -n "$SUBDIR" ] && [ "$SUBDIR" != "." ]; then
+              echo "Moving project files from $SUBDIR to root..."
+              shopt -s dotglob
+              mv "$SUBDIR"/* . || true
+            fi
+          fi
+
+          # 2. Create required .env file
           echo "GEMINI_API_KEY=placeholder" > .env
+
+          # 3. Create debug.keystore required by build.gradle.kts
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
+          # 4. If gradlew is missing, automatically generate it
+          if [ ! -f "gradlew" ]; then
+            echo "Generating missing Gradle wrapper..."
+            gradle wrapper --gradle-version 9.3.1
+          fi
+
           chmod +x gradlew
 
       - name: Build Debug APK
@@ -35,4 +60,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Phylogenesis-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: "**/build/outputs/apk/debug/*.apk"
