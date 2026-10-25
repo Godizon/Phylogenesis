@@ -1,0 +1,6 @@
+{
+  "name": "Phylogenesis",
+  "description": "A deterministic evolutionary sandbox simulating thermodynamics, evo-devo gene networks, biogeochemical cycles, and cataclysms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
