@@ -1,5 +1,6 @@
 package com.example.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -40,6 +41,24 @@ fun PhylogenesisScreen(
     var showLeftTelemetry by remember { mutableStateOf(false) }
     var showRightClades by remember { mutableStateOf(false) }
 
+    // System Back Handler for closing drawers/modals correctly
+    BackHandler(
+        enabled = showLeftTelemetry || showRightClades || state.showCladogramModal ||
+                state.showSpecimenModal || state.showGeneEditorModal || state.showGodToolsSheet ||
+                showSettingsModal || tutorialState.isActive
+    ) {
+        when {
+            tutorialState.isActive -> viewModel.skipTutorial()
+            showSettingsModal -> viewModel.setShowSettingsModal(false)
+            state.showGodToolsSheet -> viewModel.setGodToolsSheetVisible(false)
+            state.showGeneEditorModal -> viewModel.setShowGeneEditorModal(false)
+            state.showSpecimenModal -> viewModel.setSpecimenModalVisible(false)
+            state.showCladogramModal -> viewModel.setCladogramModalVisible(false)
+            showLeftTelemetry -> showLeftTelemetry = false
+            showRightClades -> showRightClades = false
+        }
+    }
+
     Scaffold(
         modifier = modifier
             .fillMaxSize()
@@ -79,14 +98,14 @@ fun PhylogenesisScreen(
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // On-Screen Visual Indicators (Full-screen immersion)
+                    // On-Screen Visual Indicators (Full-screen immersion, non-overlapping spacing)
                     // Top: Climate Alert Ticker
                     if (settings.showClimateTicker) {
                         ClimateAlertTicker(
                             state = state,
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
-                                .padding(horizontal = 48.dp, vertical = 6.dp)
+                                .padding(horizontal = 48.dp, vertical = 2.dp)
                         )
                     }
 
@@ -97,7 +116,7 @@ fun PhylogenesisScreen(
                             activeCataclysm = state.activeCataclysm,
                             modifier = Modifier
                                 .align(Alignment.TopStart)
-                                .padding(top = 40.dp, start = 12.dp)
+                                .padding(top = 44.dp, start = 12.dp)
                         )
                     }
 
@@ -110,6 +129,52 @@ fun PhylogenesisScreen(
                                 .align(Alignment.BottomStart)
                                 .padding(start = 12.dp, bottom = 10.dp)
                         )
+                    }
+
+                    // Quick Weather & Day-Night Layer Toggles (Floating right-center bar)
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        // Weather Cloud Toggle
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (state.overlays.showWeatherClouds) PixelPanelLight else PixelPanel)
+                                .border(2.dp, if (state.overlays.showWeatherClouds) PixelCyan else MutedText, RoundedCornerShape(4.dp))
+                                .clickable { viewModel.toggleWeatherClouds() }
+                                .padding(4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Cloud,
+                                contentDescription = "Toggle Drifting Clouds",
+                                tint = if (state.overlays.showWeatherClouds) PixelCyan else MutedText,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Day-Night Terminator Toggle
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (state.overlays.showDayNightCycle) PixelPanelLight else PixelPanel)
+                                .border(2.dp, if (state.overlays.showDayNightCycle) PixelGold else MutedText, RoundedCornerShape(4.dp))
+                                .clickable { viewModel.toggleDayNightCycle() }
+                                .padding(4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.WbSunny,
+                                contentDescription = "Toggle Day-Night Shadow",
+                                tint = if (state.overlays.showDayNightCycle) PixelGold else MutedText,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
 
                     // Left Telemetry Drawer Overlay

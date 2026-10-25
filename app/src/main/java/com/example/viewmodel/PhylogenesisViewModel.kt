@@ -370,6 +370,26 @@ class PhylogenesisViewModel(application: Application) : AndroidViewModel(applica
         _uiState.update { it.copy(showGodToolsSheet = visible) }
     }
 
+    fun toggleWeatherClouds() {
+        _uiState.update { state ->
+            val newOverlays = state.overlays.copy(showWeatherClouds = !state.overlays.showWeatherClouds)
+            state.copy(
+                overlays = newOverlays,
+                systemAlertMessage = if (newOverlays.showWeatherClouds) "Weather Clouds Layer: Enabled" else "Weather Clouds Layer: Hidden"
+            )
+        }
+    }
+
+    fun toggleDayNightCycle() {
+        _uiState.update { state ->
+            val newOverlays = state.overlays.copy(showDayNightCycle = !state.overlays.showDayNightCycle)
+            state.copy(
+                overlays = newOverlays,
+                systemAlertMessage = if (newOverlays.showDayNightCycle) "Day-Night Terminator: Enabled" else "Day-Night Terminator: Hidden"
+            )
+        }
+    }
+
     fun setShowGeneEditorModal(visible: Boolean) {
         _uiState.update { it.copy(showGeneEditorModal = visible) }
     }
