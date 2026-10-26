@@ -269,6 +269,22 @@ class PhylogenesisViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    fun selectOrganism(organism: LivingOrganism) {
+        _uiState.update {
+            it.copy(
+                selectedOrganismId = organism.id,
+                selectedCladeId = organism.cladeId,
+                selectedSpecimen = organism.phenotype
+            )
+        }
+    }
+
+    fun clearSelectedOrganism() {
+        _uiState.update {
+            it.copy(selectedOrganismId = null)
+        }
+    }
+
     fun selectSpecimen(specimen: OrganismPhenotype) {
         _uiState.update {
             it.copy(
@@ -301,9 +317,18 @@ class PhylogenesisViewModel(application: Application) : AndroidViewModel(applica
                     clade.copy(dominantMorphotype = mutated)
                 } else clade
             }
+            val updatedOrganisms = state.livingOrganisms.map { org ->
+                if (org.cladeId == state.selectedCladeId || org.id == state.selectedOrganismId) {
+                    org.copy(
+                        phenotype = mutated,
+                        spriteScale = (org.spriteScale * 1.15f).coerceAtMost(2.5f)
+                    )
+                } else org
+            }
             state.copy(
                 selectedSpecimen = mutated,
                 clades = updatedClades,
+                livingOrganisms = updatedOrganisms,
                 systemAlertMessage = "NEO-FUNCTIONALIZATION: Mutagen applied to ${mutated.binomialName}!"
             )
         }
@@ -394,6 +419,23 @@ class PhylogenesisViewModel(application: Application) : AndroidViewModel(applica
         _uiState.update { it.copy(showGeneEditorModal = visible) }
     }
 
+    fun setCelestialModalVisible(visible: Boolean) {
+        _uiState.update { it.copy(showCelestialModal = visible) }
+    }
+
+    fun applyCelestialScenario(scenario: CelestialScenario) {
+        val newPlanetary = PlanetaryState.fromScenario(scenario)
+        _uiState.update { state ->
+            val updatedWeather = WeatherEngine.createInitialWeather(newPlanetary)
+            state.copy(
+                planetary = newPlanetary,
+                weather = updatedWeather,
+                showCelestialModal = false,
+                systemAlertMessage = "CELESTIAL SCENARIO: Switched to ${scenario.title} (${scenario.subtitle})!"
+            )
+        }
+    }
+
     fun injectEngineeredOrganism(organism: OrganismPhenotype) {
         _uiState.update { state ->
             val engineeredClade = Clade(
@@ -414,9 +456,30 @@ class PhylogenesisViewModel(application: Application) : AndroidViewModel(applica
             val updatedClades = state.clades.toMutableList().apply {
                 add(0, engineeredClade)
             }
+            val newLivingOrg = LivingOrganism(
+                id = "org_synth_" + organism.id,
+                cladeId = engineeredClade.id,
+                commonName = organism.commonName,
+                binomialName = organism.binomialName,
+                phylum = engineeredClade.phylum.label,
+                trophicLevel = engineeredClade.trophicLevel,
+                emoji = if (engineeredClade.trophicLevel == TrophicLevel.PRIMARY_PRODUCER) "🌿" else "🧬",
+                phenotype = organism,
+                xRatio = 0.50f,
+                yRatio = 0.50f,
+                headingRad = 0.5f,
+                speed = 0.045f,
+                spriteScale = 1.45f,
+                behavior = OrganismBehavior.CRUISING
+            )
+            val updatedLiving = state.livingOrganisms.toMutableList().apply {
+                add(0, newLivingOrg)
+            }
             state.copy(
                 clades = updatedClades,
+                livingOrganisms = updatedLiving,
                 selectedCladeId = engineeredClade.id,
+                selectedOrganismId = newLivingOrg.id,
                 selectedSpecimen = organism,
                 showGeneEditorModal = false,
                 systemAlertMessage = "ORGANISM SYNTHESIZED: ${organism.binomialName} released into active biosphere!"

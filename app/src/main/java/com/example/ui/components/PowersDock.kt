@@ -39,6 +39,7 @@ fun PowersDock(
     onOpenTree: () -> Unit,
     onOpenTimeTravel: () -> Unit,
     onOpenPlanetControls: () -> Unit,
+    onOpenCelestialModal: () -> Unit = {},
     onShowInfo: (InfoEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -60,6 +61,9 @@ fun PowersDock(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Create / explore
+                PowerButton("🌌", "Worlds", PixelGold, onOpenCelestialModal) {
+                    onShowInfo(InfoEntry("🌌", "Celestial Worlds", "Switch between authentic astrophysical scenarios: Earth, Mars, Europa, Titan, and Epsilon Eridani."))
+                }
                 PowerButton("🧪", "Create Life", PixelCyan, onOpenGeneLab) { onShowInfo(Glossary.geneLab) }
                 PowerButton("🌳", "Tree of Life", PixelEmerald, onOpenTree) { onShowInfo(Glossary.tree) }
                 PowerButton("🕰️", "Time Travel", PixelGold, onOpenTimeTravel) { onShowInfo(Glossary.timeTravel) }

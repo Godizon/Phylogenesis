@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -35,15 +36,18 @@ fun GeneEditorModal(
     onInjectOrganism: (OrganismPhenotype) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var speciesName by remember { mutableStateOf("Synthetica exotica") }
-    var commonName by remember { mutableStateOf("Chitinous Crawler") }
-    var cephalicCount by remember { mutableStateOf(1) }
-    var thoracicCount by remember { mutableStateOf(4) }
-    var abdominalCount by remember { mutableStateOf(3) }
-    var selectedLimb by remember { mutableStateOf(LimbType.JOINTED_WALKER) }
+    BackHandler { onDismiss() }
+
+    var selectedTab by remember { mutableIntStateOf(0) }
+    var speciesName by remember { mutableStateOf(initialSpecimen?.binomialName ?: "Synthetica exotica") }
+    var commonName by remember { mutableStateOf(initialSpecimen?.commonName ?: "Engineered Morphotype") }
+    var cephalicCount by remember { mutableStateOf(initialSpecimen?.segments?.count { it.type == SegmentType.CEPHALIC }?.coerceIn(1, 3) ?: 1) }
+    var thoracicCount by remember { mutableStateOf(initialSpecimen?.segments?.count { it.type == SegmentType.THORACIC }?.coerceIn(1, 8) ?: 4) }
+    var abdominalCount by remember { mutableStateOf(initialSpecimen?.segments?.count { it.type == SegmentType.ABDOMINAL || it.type == SegmentType.CAUDAL }?.coerceIn(1, 6) ?: 3) }
+    var selectedLimb by remember { mutableStateOf(initialSpecimen?.segments?.firstOrNull { it.limbType != LimbType.NONE }?.limbType ?: LimbType.JOINTED_WALKER) }
     var activeCodons by remember {
         mutableStateOf(
-            setOf(
+            initialSpecimen?.activeCodons?.toSet() ?: setOf(
                 CodonType.CHITIN_SYNTHASE,
                 CodonType.CYTOCHROME_C,
                 CodonType.VASCULAR_PUMP,
@@ -312,146 +316,302 @@ fun GeneEditorModal(
                         }
                     }
 
-                    // Section 2: Hox Metamere Segment Regulators
-                    Card(
+                    // Evo-Devo Workbench Tab Selector
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = PixelPanelLight),
-                        shape = RoundedCornerShape(4.dp),
-                        border = BorderStroke(1.dp, PixelBorderLight)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "BODY SECTIONS",
-                                color = PixelGold,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontFamily = FontFamily.Monospace
-                            )
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                        val tabs = listOf(
+                            0 to "🦴 Morphology",
+                            1 to "🧬 Codons",
+                            2 to "⚖️ Biomechanics"
+                        )
+                        tabs.forEach { (idx, title) ->
+                            val isSelected = selectedTab == idx
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = if (isSelected) PixelCyan else PixelVoid,
+                                border = BorderStroke(1.5.dp, if (isSelected) PixelGold else PixelBorderDark),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { selectedTab = idx }
                             ) {
-                                SegmentCounter(label = "Head Sections", count = cephalicCount, min = 1, max = 3) {
-                                    cephalicCount = it
-                                }
-                                SegmentCounter(label = "Body & Limb Sections", count = thoracicCount, min = 1, max = 8) {
-                                    thoracicCount = it
-                                }
-                                SegmentCounter(label = "Belly Sections", count = abdominalCount, min = 1, max = 6) {
-                                    abdominalCount = it
-                                }
+                                Text(
+                                    text = title,
+                                    color = if (isSelected) OnPrimary else PaleText,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 7.dp)
+                                )
                             }
                         }
                     }
 
-                    // Section 3: Locomotive Appendage Selector
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = PixelPanelLight),
-                        shape = RoundedCornerShape(4.dp),
-                        border = BorderStroke(1.dp, PixelBorderLight)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                    // TAB 0: Morphology & Hox Segments
+                    if (selectedTab == 0) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = PixelPanelLight),
+                            shape = RoundedCornerShape(4.dp),
+                            border = BorderStroke(1.dp, PixelBorderLight)
                         ) {
-                            Text(
-                                text = "HOW IT MOVES",
-                                color = PixelGold,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontFamily = FontFamily.Monospace
-                            )
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            Column(
+                                modifier = Modifier.padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                LimbType.values().forEach { limb ->
-                                    val isSelected = selectedLimb == limb
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(RoundedCornerShape(3.dp))
-                                            .background(if (isSelected) PixelCyan else PixelVoid)
-                                            .border(1.5.dp, if (isSelected) PixelGold else PixelBorderDark, RoundedCornerShape(3.dp))
-                                            .clickable { selectedLimb = limb }
-                                            .padding(vertical = 6.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = limb.label.split(" ").first(),
-                                            color = if (isSelected) OnPrimary else PaleText,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            fontFamily = FontFamily.Monospace
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Section 4: Virtual DNA Codon Matrix
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = PixelPanelLight),
-                        shape = RoundedCornerShape(4.dp),
-                        border = BorderStroke(1.dp, PixelBorderLight)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "GENES (choose which traits it has)",
-                                color = PixelGold,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontFamily = FontFamily.Monospace
-                            )
-
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                val selectableCodons = listOf(
-                                    CodonType.CHITIN_SYNTHASE to "Chitin Armor",
-                                    CodonType.CALCIFICATION_CA3PO4 to "Bone Calcium",
-                                    CodonType.COLLAGEN_ELASTIN to "Collagen Matrix",
-                                    CodonType.CYTOCHROME_C to "Mito. Aerobic",
-                                    CodonType.VASCULAR_PUMP to "Heart Pump",
-                                    CodonType.RUBISCO to "Rubisco Fix",
-                                    CodonType.CATALASE to "Antioxidant",
-                                    CodonType.SPIRACLE_TRACHEA to "Tracheae"
+                                Text(
+                                    text = "HOX METAMERE SEGMENTS",
+                                    color = PixelGold,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = FontFamily.Monospace
                                 )
 
-                                selectableCodons.forEach { (codon, label) ->
-                                    val isChecked = activeCodons.contains(codon)
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(3.dp))
-                                            .background(if (isChecked) PixelPurple else PixelVoid)
-                                            .border(1.5.dp, if (isChecked) PixelGold else PixelBorderLight, RoundedCornerShape(3.dp))
-                                            .clickable {
-                                                activeCodons = if (isChecked) activeCodons - codon else activeCodons + codon
-                                            }
-                                            .padding(horizontal = 8.dp, vertical = 5.dp)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    SegmentCounter(label = "Cephalic (Head)", count = cephalicCount, min = 1, max = 3) {
+                                        cephalicCount = it
+                                    }
+                                    SegmentCounter(label = "Thoracic (Body/Limbs)", count = thoracicCount, min = 1, max = 8) {
+                                        thoracicCount = it
+                                    }
+                                    SegmentCounter(label = "Abdominal / Tail", count = abdominalCount, min = 1, max = 6) {
+                                        abdominalCount = it
+                                    }
+                                }
+                            }
+                        }
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = PixelPanelLight),
+                            shape = RoundedCornerShape(4.dp),
+                            border = BorderStroke(1.dp, PixelBorderLight)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "LOCOMOTIVE APPENDAGE KINEMATICS",
+                                    color = PixelGold,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    LimbType.values().forEach { limb ->
+                                        val isSelected = selectedLimb == limb
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(3.dp))
+                                                .background(if (isSelected) PixelCyan else PixelVoid)
+                                                .border(1.5.dp, if (isSelected) PixelGold else PixelBorderDark, RoundedCornerShape(3.dp))
+                                                .clickable { selectedLimb = limb }
+                                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = limb.label,
+                                                color = if (isSelected) OnPrimary else PaleText,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // TAB 1: vDNA Codons & Biological Traits
+                    if (selectedTab == 1) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = PixelPanelLight),
+                            shape = RoundedCornerShape(4.dp),
+                            border = BorderStroke(1.dp, PixelBorderLight)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "VIRTUAL DNA CODONS (Select active gene expressions)",
+                                    color = PixelGold,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    val allCodons = listOf(
+                                        CodonType.CHITIN_SYNTHASE to "🛡️ Chitin Armor",
+                                        CodonType.CALCIFICATION_CA3PO4 to "🦴 Bone Calcium",
+                                        CodonType.COLLAGEN_ELASTIN to "🧬 Collagen Matrix",
+                                        CodonType.PNEUMATIC_BONES to "🪶 Hollow Air Bones",
+                                        CodonType.KERATIN_FEATHERS to "🦅 Keratin Feathers",
+                                        CodonType.CYTOCHROME_C to "⚡ Cytochrome-c (Mito)",
+                                        CodonType.RUBISCO to "🌿 Rubisco Photosynthesis",
+                                        CodonType.CATALASE to "🧪 Peroxide Catalase",
+                                        CodonType.AZOTOSOME_LIPID to "🪐 Cryo Azotosome",
+                                        CodonType.VIRAL_CAPSID_INJECT to "🦠 Capsid Injector",
+                                        CodonType.VASCULAR_PUMP to "🫀 Multi-Chamber Heart",
+                                        CodonType.SPIRACLE_TRACHEA to "🫁 Tracheal Canals",
+                                        CodonType.ENDOTHERMIC_THERMO to "🔥 Warm-Blooded Endothermy",
+                                        CodonType.NEOCORTEX_HOX to "🧠 Neocortex Cephalization"
+                                    )
+
+                                    allCodons.forEach { (codon, label) ->
+                                        val isChecked = activeCodons.contains(codon)
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(3.dp))
+                                                .background(if (isChecked) PixelPurple else PixelVoid)
+                                                .border(1.5.dp, if (isChecked) PixelGold else PixelBorderLight, RoundedCornerShape(3.dp))
+                                                .clickable {
+                                                    activeCodons = if (isChecked) activeCodons - codon else activeCodons + codon
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                                        ) {
+                                            Text(
+                                                text = label,
+                                                color = if (isChecked) Color.White else PaleText,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // TAB 2: Biomechanics & Physical Laws
+                    if (selectedTab == 2) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = PixelPanelLight),
+                            shape = RoundedCornerShape(4.dp),
+                            border = BorderStroke(1.dp, PixelBorderLight)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "BIOMECHANICAL & PHYSIOLOGICAL METER",
+                                    color = PixelGold,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = FontFamily.Monospace
+                                )
+
+                                val metrics = previewOrganism.biomechanics
+
+                                // Square-Cube Stress Bar
+                                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Text(
-                                            text = label,
-                                            color = if (isChecked) Color.White else PaleText,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            fontFamily = FontFamily.Monospace
+                                            text = "Square-Cube Skeletal Yield Stress:",
+                                            color = PaleText,
+                                            fontSize = 11.sp
+                                        )
+                                        Text(
+                                            text = "${metrics.skeletalYieldStressPercent.toInt()}% (${if (metrics.skeletalYieldStressPercent < 70f) "Structural Reserve" else if (metrics.skeletalYieldStressPercent < 100f) "Yield Limit" else "COLLAPSE RISK!"})",
+                                            color = if (metrics.skeletalYieldStressPercent < 70f) PixelEmerald else if (metrics.skeletalYieldStressPercent < 100f) PixelGold else PixelCrimson,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
                                         )
                                     }
+                                    LinearProgressIndicator(
+                                        progress = { (metrics.skeletalYieldStressPercent / 120f).coerceIn(0f, 1f) },
+                                        color = if (metrics.skeletalYieldStressPercent < 70f) PixelEmerald else if (metrics.skeletalYieldStressPercent < 100f) PixelGold else PixelCrimson,
+                                        trackColor = PixelVoid,
+                                        modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(2.dp))
+                                    )
+                                }
+
+                                Divider(color = PixelBorderDark, thickness = 1.dp)
+
+                                // Fick's Law & Respiration
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Fick's Diffusion Safety Margin:", color = PaleText, fontSize = 11.sp)
+                                    Text(
+                                        "${String.format("%.2f", metrics.vascularDiffusionSafety)}x",
+                                        color = if (metrics.vascularDiffusionSafety >= 1.0f) PixelEmerald else PixelCrimson,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Respiration Organ:", color = PaleText, fontSize = 11.sp)
+                                    Text(previewOrganism.respirationSystem, color = PixelCyan, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Circulation System:", color = PaleText, fontSize = 11.sp)
+                                    Text(previewOrganism.circulationSystem, color = PixelCyan, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                                }
+
+                                Divider(color = PixelBorderDark, thickness = 1.dp)
+
+                                // Reynolds Number & Kleiber Metabolic
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Reynolds Number (Re):", color = PaleText, fontSize = 11.sp)
+                                    Text(
+                                        "${metrics.reynoldsNumber.toInt()} (${if (metrics.reynoldsNumber < 10f) "Stokes Viscous" else "Inertial Turbulent"})",
+                                        color = PaleText,
+                                        fontSize = 11.sp,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Kleiber Basal Metabolic Cost:", color = PaleText, fontSize = 11.sp)
+                                    Text(
+                                        "${metrics.dailyMetabolicKj.toInt()} kJ / day",
+                                        color = PixelGold,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace
+                                    )
                                 }
                             }
                         }

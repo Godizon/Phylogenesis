@@ -63,6 +63,45 @@ data class ActiveCataclysm(
     val casualtiesTons: Double = 0.0
 )
 
+
+enum class OrganismBehavior(val label: String, val emoji: String) {
+    CRUISING("Cruising & Patrolling", "🏊"),
+    GRAZING("Benthic Grazing", "🌿"),
+    HUNTING("Stalking Prey", "🎯"),
+    RESTING("Resting on Seafloor", "💤"),
+    SCHOOLING("Schooling Wave", "🐟"),
+    FLEEING_CATACLYSM("Fleeing Cataclysm", "⚡"),
+    THERMAL_STRESS("Thermal Stress Shock", "🔥"),
+    HYPOXIA_GASP("Hypoxic Gasping", "🫧"),
+    RADIATION_MUTATING("Cosmic Mutating", "🧬"),
+    BURROWING_SHELTER("Burrowing for Safety", "🛡️"),
+    OXYGEN_GIGANTISM("Oxygenic Gigantism", "🦕")
+}
+
+data class LivingOrganism(
+    val id: String,
+    val cladeId: String,
+    val commonName: String,
+    val binomialName: String,
+    val phylum: String,
+    val trophicLevel: TrophicLevel,
+    val emoji: String,
+    val phenotype: OrganismPhenotype,
+    val xRatio: Float, // Normalized X position (0.05 to 0.95)
+    val yRatio: Float, // Normalized Y position (0.15 to 0.85)
+    val headingRad: Float = 0f, // Movement heading angle in radians
+    val speed: Float = 0.04f, // Movement speed ratio per second
+    val spriteScale: Float = 1.0f, // Visual sprite scale multiplier
+    val behavior: OrganismBehavior = OrganismBehavior.CRUISING,
+    val behaviorTimer: Float = 3.5f,
+    val health: Float = 1.0f,
+    val energy: Float = 0.9f,
+    val swimPhase: Float = 0f,
+    val adaptationNote: String = "Normal Baseline",
+    val isStressed: Boolean = false,
+    val stressReason: String? = null
+)
+
 /**
  * Global game state for Phylogenesis.
  */
@@ -75,7 +114,9 @@ data class SimulationState(
     val planetary: PlanetaryState = PlanetaryState(),
     val weather: WeatherState = WeatherState(),
     val clades: List<Clade> = emptyList(),
+    val livingOrganisms: List<LivingOrganism> = emptyList(),
     val selectedCladeId: String? = null,
+    val selectedOrganismId: String? = null,
     val selectedSpecimen: OrganismPhenotype? = null,
     val overlays: ViewportOverlays = ViewportOverlays(),
     val activeCataclysm: ActiveCataclysm? = null,
@@ -84,6 +125,7 @@ data class SimulationState(
     val showSpecimenModal: Boolean = false,
     val showGodToolsSheet: Boolean = false,
     val showGeneEditorModal: Boolean = false,
+    val showCelestialModal: Boolean = false,
     val totalBiomassTons: Double = 1.42e12,
     val globalTaxonDiversityCount: Int = 142,
     val systemAlertMessage: String? = null
@@ -92,6 +134,9 @@ data class SimulationState(
 
     val selectedClade: Clade?
         get() = clades.firstOrNull { it.id == selectedCladeId } ?: clades.firstOrNull()
+
+    val selectedOrganism: LivingOrganism?
+        get() = livingOrganisms.firstOrNull { it.id == selectedOrganismId }
 
     val formattedTime: String
         get() = if (currentTimeGa >= 1.0f) {

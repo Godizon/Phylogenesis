@@ -22,6 +22,9 @@ object SimulationEngine {
                 arPercent = 0.9f
             )
         )
+        val initialOrganisms = createInitialOrganisms(initialClades)
+        val defaultOrganism = initialOrganisms.firstOrNull()
+
         return SimulationState(
             currentTimeGa = 0.525f, // 525 Ma (Early Cambrian Explosion)
             timeSpeedMaPerSec = 10.0f,
@@ -31,7 +34,9 @@ object SimulationEngine {
             planetary = initialPlanetary,
             weather = WeatherEngine.createInitialWeather(initialPlanetary),
             clades = initialClades,
+            livingOrganisms = initialOrganisms,
             selectedCladeId = defaultClade.id,
+            selectedOrganismId = defaultOrganism?.id,
             selectedSpecimen = defaultClade.dominantMorphotype,
             totalBiomassTons = 4.2e11,
             globalTaxonDiversityCount = 286
@@ -135,6 +140,29 @@ object SimulationEngine {
         totalBiomass = max(1e9, liveBiomass)
 
         val updatedWeather = WeatherEngine.stepWeather(currentState.weather, planetary, deltaSeconds)
+        val updatedLivingOrganisms = stepLivingOrganisms(
+            organisms = currentState.livingOrganisms,
+            planetary = planetary,
+            activeCataclysm = activeCataclysm,
+            deltaSeconds = deltaSeconds
+        )
+
+        // Environmental tipping point alerts
+        var alertMsg = currentState.systemAlertMessage
+        val hasGigantism = alertMsg?.contains("Gigantism") == true
+        val hasHypoxia = alertMsg?.contains("Hypoxia") == true
+        val hasCryo = alertMsg?.contains("Cryo-Torpor") == true
+        val hasHyperthermia = alertMsg?.contains("Hyperthermia") == true
+
+        if (planetary.atmosphere.o2Percent >= 24f && !hasGigantism) {
+            alertMsg = "🦕 EVOLUTION: Atmospheric O₂ (${"%.1f".format(planetary.atmosphere.o2Percent)}%) triggering widespread Megafaunal Gigantism!"
+        } else if (planetary.atmosphere.o2Percent <= 7f && !hasHypoxia) {
+            alertMsg = "🫧 ADAPTATION: Hypoxic oceans (${"%.1f".format(planetary.atmosphere.o2Percent)}% O₂) driving Dwarfism and Gill Expansion!"
+        } else if (planetary.surfaceTempCelsius <= 0f && !hasCryo) {
+            alertMsg = "❄️ CLIMATE: Freezing oceans (${"%.1f".format(planetary.surfaceTempCelsius)}°C) inducing Cryo-Torpor and Antifreeze synthesis!"
+        } else if (planetary.surfaceTempCelsius >= 40f && !hasHyperthermia) {
+            alertMsg = "🔥 CLIMATE CRISIS: Ocean Hyperthermia (${"%.1f".format(planetary.surfaceTempCelsius)}°C) forcing Thermal Miniaturization!"
+        }
 
         return currentState.copy(
             currentTimeGa = newTimeGa,
@@ -142,8 +170,496 @@ object SimulationEngine {
             weather = updatedWeather,
             activeCataclysm = activeCataclysm,
             clades = updatedClades,
-            totalBiomassTons = totalBiomass
+            livingOrganisms = updatedLivingOrganisms,
+            totalBiomassTons = totalBiomass,
+            systemAlertMessage = alertMsg
         )
+    }
+
+    fun createInitialOrganisms(clades: List<Clade>): List<LivingOrganism> {
+        val triloClade = clades.firstOrNull { it.id == "clad_trilobita" } ?: clades.first()
+        val anomaloClade = clades.firstOrNull { it.id == "clad_anomalocaris" } ?: clades.first()
+        val chordClade = clades.firstOrNull { it.id == "clad_chordata" } ?: clades.first()
+        val cyanoClade = clades.firstOrNull { it.id == "clad_cyanobiota" } ?: clades.first()
+        val chemoClade = clades.firstOrNull { it.id == "clad_chemoliths" } ?: cyanoClade
+        val virusClade = clades.firstOrNull { it.id == "clad_virus" } ?: triloClade
+        val placodermClade = clades.firstOrNull { it.id == "clad_placoderm" } ?: chordClade
+        val tetrapodClade = clades.firstOrNull { it.id == "clad_tetrapod" } ?: chordClade
+        val dinoClade = clades.firstOrNull { it.id == "clad_dinosaur" } ?: chordClade
+        val birdClade = clades.firstOrNull { it.id == "clad_bird" } ?: chordClade
+        val mammalClade = clades.firstOrNull { it.id == "clad_mammal" } ?: chordClade
+
+        return listOf(
+            // 1. Capsid Bacteriophage / Microscopic Virus
+            LivingOrganism(
+                id = "org_virus_1",
+                cladeId = virusClade.id,
+                commonName = "Icosahedral Bacteriophage",
+                binomialName = virusClade.dominantMorphotype.binomialName,
+                phylum = virusClade.phylum.label,
+                trophicLevel = virusClade.trophicLevel,
+                emoji = "🦠",
+                phenotype = virusClade.dominantMorphotype,
+                xRatio = 0.22f,
+                yRatio = 0.32f,
+                headingRad = 0.65f,
+                speed = 0.038f,
+                spriteScale = 0.95f,
+                behavior = OrganismBehavior.HUNTING,
+                behaviorTimer = 2.5f
+            ),
+
+            // 2. Trilobite (Arthropod seabed crawler)
+            LivingOrganism(
+                id = "org_trilo_1",
+                cladeId = triloClade.id,
+                commonName = "Shield-Headed Trilobite",
+                binomialName = triloClade.dominantMorphotype.binomialName,
+                phylum = triloClade.phylum.label,
+                trophicLevel = triloClade.trophicLevel,
+                emoji = "🛡️",
+                phenotype = triloClade.dominantMorphotype,
+                xRatio = 0.30f,
+                yRatio = 0.72f,
+                headingRad = 0.35f,
+                speed = 0.024f,
+                spriteScale = 1.30f,
+                behavior = OrganismBehavior.GRAZING,
+                behaviorTimer = 4.0f
+            ),
+            LivingOrganism(
+                id = "org_trilo_2",
+                cladeId = triloClade.id,
+                commonName = "Shield-Headed Trilobite",
+                binomialName = triloClade.dominantMorphotype.binomialName,
+                phylum = triloClade.phylum.label,
+                trophicLevel = triloClade.trophicLevel,
+                emoji = "🛡️",
+                phenotype = triloClade.dominantMorphotype,
+                xRatio = 0.76f,
+                yRatio = 0.78f,
+                headingRad = 3.2f,
+                speed = 0.022f,
+                spriteScale = 1.25f,
+                behavior = OrganismBehavior.CRUISING,
+                behaviorTimer = 3.2f
+            ),
+
+            // 3. Anomalocarid (Radiodonta Apex Swimmer)
+            LivingOrganism(
+                id = "org_anomalo_1",
+                cladeId = anomaloClade.id,
+                commonName = "Titanopteryx (Apex Swimmer)",
+                binomialName = anomaloClade.dominantMorphotype.binomialName,
+                phylum = anomaloClade.phylum.label,
+                trophicLevel = anomaloClade.trophicLevel,
+                emoji = "🦞",
+                phenotype = anomaloClade.dominantMorphotype,
+                xRatio = 0.40f,
+                yRatio = 0.38f,
+                headingRad = 0.25f,
+                speed = 0.042f,
+                spriteScale = 1.60f,
+                behavior = OrganismBehavior.HUNTING,
+                behaviorTimer = 6.0f
+            ),
+
+            // 4. Stem-Chordate (Notochord ancestral fish)
+            LivingOrganism(
+                id = "org_chord_1",
+                cladeId = chordClade.id,
+                commonName = "Flexible-Rod Pre-Chordate",
+                binomialName = chordClade.dominantMorphotype.binomialName,
+                phylum = chordClade.phylum.label,
+                trophicLevel = chordClade.trophicLevel,
+                emoji = "🐟",
+                phenotype = chordClade.dominantMorphotype,
+                xRatio = 0.50f,
+                yRatio = 0.52f,
+                headingRad = 1.10f,
+                speed = 0.050f,
+                spriteScale = 1.20f,
+                behavior = OrganismBehavior.SCHOOLING,
+                behaviorTimer = 3.0f
+            ),
+
+            // 5. Armored Placoderm Super-Predator (Dunkleosteus)
+            LivingOrganism(
+                id = "org_placoderm_1",
+                cladeId = placodermClade.id,
+                commonName = "Armored Placoderm Super-Predator",
+                binomialName = placodermClade.dominantMorphotype.binomialName,
+                phylum = placodermClade.phylum.label,
+                trophicLevel = placodermClade.trophicLevel,
+                emoji = "🦈",
+                phenotype = placodermClade.dominantMorphotype,
+                xRatio = 0.65f,
+                yRatio = 0.44f,
+                headingRad = 2.80f,
+                speed = 0.038f,
+                spriteScale = 1.55f,
+                behavior = OrganismBehavior.CRUISING,
+                behaviorTimer = 5.0f
+            ),
+
+            // 6. Sarcopterygian Tetrapod Walker (Tiktaalik)
+            LivingOrganism(
+                id = "org_tetrapod_1",
+                cladeId = tetrapodClade.id,
+                commonName = "Shallow-Shelf Tetrapod Walker",
+                binomialName = tetrapodClade.dominantMorphotype.binomialName,
+                phylum = tetrapodClade.phylum.label,
+                trophicLevel = tetrapodClade.trophicLevel,
+                emoji = "🦎",
+                phenotype = tetrapodClade.dominantMorphotype,
+                xRatio = 0.35f,
+                yRatio = 0.65f,
+                headingRad = 0.95f,
+                speed = 0.020f,
+                spriteScale = 1.30f,
+                behavior = OrganismBehavior.GRAZING,
+                behaviorTimer = 4.5f
+            ),
+
+            // 7. Bipedal Theropod Dinosaur (Archeoraptor)
+            LivingOrganism(
+                id = "org_dino_1",
+                cladeId = dinoClade.id,
+                commonName = "Agile Bipedal Theropod",
+                binomialName = dinoClade.dominantMorphotype.binomialName,
+                phylum = dinoClade.phylum.label,
+                trophicLevel = dinoClade.trophicLevel,
+                emoji = "🦖",
+                phenotype = dinoClade.dominantMorphotype,
+                xRatio = 0.60f,
+                yRatio = 0.70f,
+                headingRad = 3.10f,
+                speed = 0.034f,
+                spriteScale = 1.50f,
+                behavior = OrganismBehavior.HUNTING,
+                behaviorTimer = 4.0f
+            ),
+
+            // 8. Feathered Avian Flyer (Protoavis)
+            LivingOrganism(
+                id = "org_bird_1",
+                cladeId = birdClade.id,
+                commonName = "Feathered Aerodynamic Aviator",
+                binomialName = birdClade.dominantMorphotype.binomialName,
+                phylum = birdClade.phylum.label,
+                trophicLevel = birdClade.trophicLevel,
+                emoji = "🦅",
+                phenotype = birdClade.dominantMorphotype,
+                xRatio = 0.45f,
+                yRatio = 0.26f,
+                headingRad = 0.15f,
+                speed = 0.048f,
+                spriteScale = 1.25f,
+                behavior = OrganismBehavior.CRUISING,
+                behaviorTimer = 3.5f
+            ),
+
+            // 9. Endothermic Mammal (Morganucodon)
+            LivingOrganism(
+                id = "org_mammal_1",
+                cladeId = mammalClade.id,
+                commonName = "Endothermic Night Forager",
+                binomialName = mammalClade.dominantMorphotype.binomialName,
+                phylum = mammalClade.phylum.label,
+                trophicLevel = mammalClade.trophicLevel,
+                emoji = "🦔",
+                phenotype = mammalClade.dominantMorphotype,
+                xRatio = 0.78f,
+                yRatio = 0.62f,
+                headingRad = 1.85f,
+                speed = 0.028f,
+                spriteScale = 1.10f,
+                behavior = OrganismBehavior.GRAZING,
+                behaviorTimer = 3.8f
+            ),
+
+            // 10. Cyanobacteria Stromatolite Reef
+            LivingOrganism(
+                id = "org_cyano_1",
+                cladeId = cyanoClade.id,
+                commonName = "Stromatolite Reef Colony",
+                binomialName = cyanoClade.dominantMorphotype.binomialName,
+                phylum = cyanoClade.phylum.label,
+                trophicLevel = cyanoClade.trophicLevel,
+                emoji = "🌿",
+                phenotype = cyanoClade.dominantMorphotype,
+                xRatio = 0.16f,
+                yRatio = 0.80f,
+                headingRad = 0f,
+                speed = 0f,
+                spriteScale = 1.45f,
+                behavior = OrganismBehavior.GRAZING,
+                behaviorTimer = 999f
+            ),
+
+            // 11. Hydrothermal Abyssal Vent Chimney
+            LivingOrganism(
+                id = "org_chemo_1",
+                cladeId = chemoClade.id,
+                commonName = "Abyssal Vent Chimney Chemolith",
+                binomialName = chemoClade.dominantMorphotype.binomialName,
+                phylum = chemoClade.phylum.label,
+                trophicLevel = chemoClade.trophicLevel,
+                emoji = "🌋",
+                phenotype = chemoClade.dominantMorphotype,
+                xRatio = 0.86f,
+                yRatio = 0.82f,
+                headingRad = 0f,
+                speed = 0f,
+                spriteScale = 1.50f,
+                behavior = OrganismBehavior.GRAZING,
+                behaviorTimer = 999f
+            )
+        )
+    }
+
+    fun stepLivingOrganisms(organisms: List<LivingOrganism>, deltaSeconds: Float): List<LivingOrganism> {
+        return stepLivingOrganisms(organisms, PlanetaryState(), null, deltaSeconds)
+    }
+
+    fun stepLivingOrganisms(
+        organisms: List<LivingOrganism>,
+        planetary: PlanetaryState,
+        activeCataclysm: ActiveCataclysm?,
+        deltaSeconds: Float
+    ): List<LivingOrganism> {
+        val o2 = planetary.atmosphere.o2Percent
+        val tempC = planetary.surfaceTempCelsius
+        val oceanPh = planetary.oceanPh
+        val gravity = planetary.gravityG
+
+        // 1. Oxygen scaling (Gigantism vs Hypoxic Dwarfism)
+        val o2ScaleFactor = when {
+            o2 >= 22f -> 1.0f + ((o2 - 21f) / 18f).coerceIn(0f, 0.85f) // Gigantism up to 1.85x
+            o2 <= 8f -> (0.60f + (o2 / 20f)).coerceIn(0.55f, 0.95f) // Dwarfism down to 0.55x
+            else -> 1.0f
+        }
+
+        // 2. Temperature scaling (Bergmann's rule / Heat-shock dwarfism)
+        val tempScaleFactor = when {
+            tempC > 38f -> (1.0f - ((tempC - 38f) / 60f)).coerceIn(0.75f, 1.0f) // Lilliput effect
+            tempC < 4f -> (1.0f + ((4f - tempC) / 80f)).coerceIn(1.0f, 1.15f) // Cold heat conservation
+            else -> 1.0f
+        }
+
+        val combinedScaleMultiplier = o2ScaleFactor * tempScaleFactor
+
+        // Temperature kinetics speed multiplier (Q10 enzyme kinetics)
+        val tempSpeedMultiplier = when {
+            planetary.isSnowballEarth || tempC < -10f -> 0.22f
+            tempC < 4f -> (0.35f + (tempC + 10f) / 40f).coerceIn(0.25f, 0.85f)
+            tempC > 42f -> 1.40f // Frenzied heat stress
+            else -> 1.0f
+        }
+
+        return organisms.map { org ->
+            if (org.speed <= 0.0001f) {
+                // Sessile reef / Cyanobiota colony
+                val isCyanobacteriaStressed = tempC > 48f || oceanPh < 6.8f
+                val reefHealth = if (isCyanobacteriaStressed) max(0.2f, org.health - 0.01f * deltaSeconds) else min(1.0f, org.health + 0.005f * deltaSeconds)
+                val reefAdaptation = when {
+                    tempC > 40f -> "Hyperthermal Chemotrophy"
+                    o2 >= 22f -> "Maximum Oxygenic Photosynthesis"
+                    planetary.isSnowballEarth -> "Sub-Ice Hydrothermal Symbiosis"
+                    else -> "Oxygenic Biostrome"
+                }
+                org.copy(
+                    swimPhase = (org.swimPhase + deltaSeconds * 2.5f) % (2 * Math.PI.toFloat()),
+                    health = reefHealth,
+                    isStressed = isCyanobacteriaStressed,
+                    stressReason = if (isCyanobacteriaStressed) "Ocean Thermal Bleaching" else null,
+                    adaptationNote = reefAdaptation
+                )
+            } else {
+                var newTimer = org.behaviorTimer - deltaSeconds
+                var newHeading = org.headingRad
+                var newBehavior = org.behavior
+                var baseSpeed = org.speed
+                var isStressed = false
+                var stressReason: String? = null
+                var adaptation = org.adaptationNote
+                var currentPhenotype = org.phenotype
+
+                // --- A. Environmental Stress Evaluation ---
+                val hasHypoxia = o2 < 8.0f
+                val hasSevereHypoxia = o2 < 3.5f
+                val hasHyperthermia = tempC > 38.0f
+                val hasGlaciation = tempC < 2.0f
+                val hasAcidification = oceanPh < 7.3f
+                val hasCataclysm = activeCataclysm != null
+
+                if (hasSevereHypoxia) {
+                    isStressed = true
+                    stressReason = "Severe Hypoxia (${"%.1f".format(o2)}% O₂)"
+                } else if (hasHyperthermia) {
+                    isStressed = true
+                    stressReason = "Hyperthermia (${"%.1f".format(tempC)}°C)"
+                } else if (hasGlaciation && planetary.isSnowballEarth) {
+                    isStressed = true
+                    stressReason = "Snowball Earth Glaciation"
+                } else if (hasAcidification) {
+                    isStressed = true
+                    stressReason = "Acid Ocean (pH ${"%.2f".format(oceanPh)})"
+                }
+
+                // --- B. Adaptive Evolution Shifts ---
+                if (o2 >= 22f) {
+                    adaptation = "Oxygenic Gigantism (+${((combinedScaleMultiplier - 1f) * 100).toInt()}%)"
+                    if (!currentPhenotype.activeCodons.contains(CodonType.SPIRACLE_TRACHEA)) {
+                        currentPhenotype = currentPhenotype.copy(
+                            activeCodons = currentPhenotype.activeCodons + CodonType.SPIRACLE_TRACHEA
+                        )
+                    }
+                } else if (hasHypoxia) {
+                    adaptation = "Hypoxic Dwarfism & Gill Expansion"
+                    val segmentsWithGills = currentPhenotype.segments.map { it.copy(hasBranchialGill = true) }
+                    val updatedCodons = if (!currentPhenotype.activeCodons.contains(CodonType.CYTOCHROME_C)) {
+                        currentPhenotype.activeCodons + CodonType.CYTOCHROME_C
+                    } else currentPhenotype.activeCodons
+                    currentPhenotype = currentPhenotype.copy(
+                        segments = segmentsWithGills,
+                        activeCodons = updatedCodons
+                    )
+                } else if (hasGlaciation) {
+                    adaptation = "Cryo-Torpor & Antifreeze Enzymes"
+                    if (!currentPhenotype.activeCodons.contains(CodonType.CATALASE)) {
+                        currentPhenotype = currentPhenotype.copy(
+                            activeCodons = currentPhenotype.activeCodons + CodonType.CATALASE
+                        )
+                    }
+                } else if (hasHyperthermia) {
+                    adaptation = "Heat-Shock Miniaturization"
+                } else if (gravity > 1.8f) {
+                    adaptation = "Super-Earth Chitin Exoskeleton"
+                    if (!currentPhenotype.activeCodons.contains(CodonType.CHITIN_SYNTHASE)) {
+                        currentPhenotype = currentPhenotype.copy(
+                            activeCodons = currentPhenotype.activeCodons + CodonType.CHITIN_SYNTHASE
+                        )
+                    }
+                } else {
+                    adaptation = "Stabilized Phenotype"
+                }
+
+                // --- C. Cataclysm Panic & Steering ---
+                if (hasCataclysm) {
+                    isStressed = true
+                    stressReason = "${activeCataclysm!!.type.title} Shockwave!"
+                    adaptation = "Disaster Evasion"
+                    newBehavior = OrganismBehavior.FLEEING_CATACLYSM
+
+                    val epiX = 0.45f
+                    val epiY = 0.50f
+                    val dx = org.xRatio - epiX
+                    val dy = org.yRatio - epiY
+                    val fleeAngle = atan2(dy, dx)
+                    newHeading = fleeAngle + (((org.swimPhase * 10f).toInt() % 3) - 1) * 0.2f
+                    baseSpeed *= 1.6f
+                } else if (newTimer <= 0f) {
+                    newTimer = 2.5f + (abs(org.id.hashCode()) % 30) / 10f
+                    val angleOffset = (((org.swimPhase * 10f).toInt() % 5) - 2) * 0.18f
+                    newHeading = (newHeading + angleOffset) % (2 * Math.PI.toFloat())
+
+                    newBehavior = when {
+                        hasHypoxia -> OrganismBehavior.HYPOXIA_GASP
+                        hasHyperthermia -> OrganismBehavior.THERMAL_STRESS
+                        hasGlaciation && (org.cladeId == "clad_trilobita" || org.cladeId == "clad_mammal") -> OrganismBehavior.BURROWING_SHELTER
+                        o2 >= 24f -> OrganismBehavior.OXYGEN_GIGANTISM
+                        org.cladeId == "clad_anomalocaris" || org.cladeId == "clad_placoderm" || org.cladeId == "clad_dinosaur" -> if ((newTimer * 10).toInt() % 2 == 0) OrganismBehavior.HUNTING else OrganismBehavior.CRUISING
+                        org.cladeId == "clad_virus" -> if ((newTimer * 10).toInt() % 2 == 0) OrganismBehavior.HUNTING else OrganismBehavior.RESTING
+                        org.cladeId == "clad_bird" -> if ((newTimer * 10).toInt() % 3 == 0) OrganismBehavior.SCHOOLING else OrganismBehavior.CRUISING
+                        org.cladeId == "clad_tetrapod" || org.cladeId == "clad_mammal" -> when ((newTimer * 10).toInt() % 3) {
+                            0 -> OrganismBehavior.GRAZING
+                            1 -> OrganismBehavior.RESTING
+                            else -> OrganismBehavior.CRUISING
+                        }
+                        org.cladeId == "clad_trilobita" -> when ((newTimer * 10).toInt() % 3) {
+                            0 -> OrganismBehavior.GRAZING
+                            1 -> OrganismBehavior.RESTING
+                            else -> OrganismBehavior.CRUISING
+                        }
+                        org.cladeId == "clad_chordata" -> OrganismBehavior.SCHOOLING
+                        else -> OrganismBehavior.CRUISING
+                    }
+                }
+
+                var effectiveSpeed = baseSpeed * tempSpeedMultiplier
+                if (newBehavior == OrganismBehavior.RESTING || newBehavior == OrganismBehavior.BURROWING_SHELTER) {
+                    effectiveSpeed *= 0.25f
+                }
+
+                // Health update
+                val healthDelta = when {
+                    hasCataclysm -> -0.06f * deltaSeconds
+                    hasSevereHypoxia -> -0.03f * deltaSeconds
+                    hasHyperthermia -> -0.02f * deltaSeconds
+                    isStressed -> -0.008f * deltaSeconds
+                    else -> 0.015f * deltaSeconds
+                }
+                val newHealth = (org.health + healthDelta).coerceIn(0.12f, 1.0f)
+
+                // Smooth boundary steering
+                if (org.xRatio < 0.12f && cos(newHeading) < 0f) {
+                    newHeading = 0f + (((org.yRatio * 10).toInt() % 3) - 1) * 0.35f
+                } else if (org.xRatio > 0.88f && cos(newHeading) > 0f) {
+                    newHeading = Math.PI.toFloat() + (((org.yRatio * 10).toInt() % 3) - 1) * 0.35f
+                }
+                if (org.yRatio < 0.22f && sin(newHeading) < 0f) {
+                    newHeading = (Math.PI.toFloat() * 0.5f)
+                } else if (org.yRatio > 0.82f && sin(newHeading) > 0f) {
+                    newHeading = (-Math.PI.toFloat() * 0.5f)
+                }
+
+                val moveX = cos(newHeading) * effectiveSpeed * deltaSeconds
+                val moveY = sin(newHeading) * effectiveSpeed * deltaSeconds
+
+                val newX = (org.xRatio + moveX).coerceIn(0.08f, 0.92f)
+                val newY = (org.yRatio + moveY).coerceIn(0.18f, 0.84f)
+                val swimFrequency = 4.5f * tempSpeedMultiplier
+                val newSwim = (org.swimPhase + deltaSeconds * swimFrequency) % (2 * Math.PI.toFloat())
+
+                // Dynamic sprite scale: smoothly interpolate toward target scale
+                val defaultCladeScale = when (org.cladeId) {
+                    "clad_anomalocaris" -> 1.60f
+                    "clad_placoderm" -> 1.55f
+                    "clad_dinosaur" -> 1.50f
+                    "clad_trilobita" -> 1.30f
+                    "clad_tetrapod" -> 1.30f
+                    "clad_bird" -> 1.25f
+                    "clad_chordata" -> 1.20f
+                    "clad_mammal" -> 1.10f
+                    "clad_virus" -> 0.95f
+                    else -> 1.30f
+                }
+                val targetScale = (defaultCladeScale * combinedScaleMultiplier).coerceIn(0.70f, 2.50f)
+                val lerpedScale = org.spriteScale + (targetScale - org.spriteScale) * (deltaSeconds * 2.5f).coerceIn(0.05f, 0.25f)
+
+                // Update physical body length and mass
+                val updatedPhenotype = currentPhenotype.copy(
+                    bodyLengthMeters = currentPhenotype.bodyLengthMeters * (targetScale / defaultCladeScale)
+                )
+
+                org.copy(
+                    xRatio = newX,
+                    yRatio = newY,
+                    headingRad = newHeading,
+                    speed = org.speed,
+                    spriteScale = lerpedScale,
+                    behavior = newBehavior,
+                    behaviorTimer = newTimer,
+                    health = newHealth,
+                    swimPhase = newSwim,
+                    adaptationNote = adaptation,
+                    isStressed = isStressed,
+                    stressReason = stressReason,
+                    phenotype = updatedPhenotype
+                )
+            }
+        }
     }
 
     /**
@@ -172,19 +688,32 @@ object SimulationEngine {
         }
 
         val totalSegments = segments.size
-        val bodyLength = max(0.01f, totalSegments * 0.035f)
+        val bodyLength = max(0.005f, totalSegments * 0.045f)
         val hasMineralization = codons.contains(CodonType.CALCIFICATION_CA3PO4) || codons.contains(CodonType.CHITIN_SYNTHASE)
-        val densityFactor = if (hasMineralization) 1150f else 980f
+        val hasPneumaticBones = codons.contains(CodonType.PNEUMATIC_BONES)
+        val densityFactor = when {
+            hasPneumaticBones -> 620f // Trabecular hollow avian/dinosaur bone structure
+            hasMineralization -> 1150f
+            else -> 980f
+        }
         val bodyRadius = bodyLength * 0.16f
         val volume = Math.PI.toFloat() * bodyRadius.pow(2) * bodyLength
-        val massKg = max(0.001f, volume * densityFactor)
+        val massKg = max(0.0001f, volume * densityFactor)
 
         val crossSectionArea = Math.PI.toFloat() * bodyRadius.pow(2)
-        val materialStrength = if (codons.contains(CodonType.CALCIFICATION_CA3PO4)) 35000f else if (codons.contains(CodonType.CHITIN_SYNTHASE)) 22000f else 11000f
+        val materialStrength = when {
+            codons.contains(CodonType.PNEUMATIC_BONES) -> 48000f // High strength-to-weight ratio
+            codons.contains(CodonType.CALCIFICATION_CA3PO4) -> 35000f
+            codons.contains(CodonType.CHITIN_SYNTHASE) -> 22000f
+            else -> 11000f
+        }
         val stressPercent = min(120f, (massKg * 9.81f * gravityG / (crossSectionArea * materialStrength)) * 100f)
 
         val hasOxygenTransport = codons.contains(CodonType.CYTOCHROME_C) || codons.contains(CodonType.VASCULAR_PUMP)
-        val metabolicCost = massKg * (if (hasOxygenTransport) 45f else 18f) * (if (gravityG > 1.5f) 1.8f else 1.0f)
+        val hasEndothermy = codons.contains(CodonType.ENDOTHERMIC_THERMO)
+        val hasNeocortex = codons.contains(CodonType.NEOCORTEX_HOX)
+        val metabolicCost = massKg * (if (hasEndothermy) 180f else if (hasOxygenTransport) 45f else 18f) *
+                (if (hasNeocortex) 1.35f else 1.0f) * (if (gravityG > 1.5f) 1.8f else 1.0f)
 
         val reynolds = (1000f * 0.25f * bodyLength) / 0.001f
 
@@ -197,21 +726,38 @@ object SimulationEngine {
             vascularDiffusionSafety = if (hasOxygenTransport) 3.5f else (0.05f / bodyLength).coerceIn(0.2f, 2.0f)
         )
 
+        val phylumName = when (limbType) {
+            LimbType.PNEUMATIC_WING -> "Feathered Avian Lineages"
+            LimbType.BIPEDAL_RAPTOR_LEG -> "Archosauria & Dinosaurs"
+            LimbType.AERODYNAMIC_WING -> "Segmented Exopoda (Arthropod)"
+            LimbType.JOINTED_WALKER -> if (hasEndothermy) "Endothermic Mammalia" else "Synthetic Arthropoda"
+            LimbType.HYDROFOIL_FIN -> "Armored Jawed Fishes"
+            LimbType.CILIA_FLAGELLA -> if (codons.contains(CodonType.VIRAL_CAPSID_INJECT)) "Capsid Viruses & Bacteriophages" else "Prebiotic Protobiota (LUCA)"
+            else -> "Notochord Chordata-Equiv"
+        }
+
+        val respDesc = when {
+            codons.contains(CodonType.KERATIN_FEATHERS) -> "Unidirectional Crosscurrent Avian Air Sacs"
+            codons.contains(CodonType.SPIRACLE_TRACHEA) -> "High-Pressure Tracheal Micro-Canals"
+            codons.contains(CodonType.VASCULAR_PUMP) -> "Closed Double-Loop Pulmonary Alveoli"
+            else -> "Dermal & Branchial Slit Gas Diffusion"
+        }
+
         return OrganismPhenotype(
             id = "synth_" + (name.hashCode().absoluteValue % 100000),
             binomialName = name,
             commonName = commonName,
-            phylum = if (limbType == LimbType.JOINTED_WALKER) "Synthetic Arthropoda" else "Engineered Chordata",
+            phylum = phylumName,
             activeCodons = codons,
             bodyLengthMeters = bodyLength,
             massKg = massKg,
-            respirationSystem = if (codons.contains(CodonType.SPIRACLE_TRACHEA)) "Branching Tracheoles" else "Dermal Gill Diffusion",
+            respirationSystem = respDesc,
             circulationSystem = if (codons.contains(CodonType.VASCULAR_PUMP)) "Multi-Chambered Vascular Heart" else "Open Hemolymph Sinus",
-            gaitDescription = "${limbType.label} gait (${gravityG}g load)",
+            gaitDescription = "${limbType.label} locomotive kinematics (${gravityG}g load)",
             segments = segments,
             biomechanics = biomechanics,
-            fitnessScore = if (stressPercent < 85f) 0.88f else 0.42f,
-            mutationRatePerGeneration = 0.045f
+            fitnessScore = if (stressPercent < 85f) 0.90f else 0.40f,
+            mutationRatePerGeneration = 0.035f
         )
     }
 
@@ -275,6 +821,35 @@ object SimulationEngine {
             )
         }
 
+        // Propagate cataclysm shockwave and mortality directly to living organisms
+        val updatedLivingOrganisms = state.livingOrganisms.map { org ->
+            val healthMultiplier = when (org.trophicLevel) {
+                TrophicLevel.DETRITIVORE -> 0.85f // Hardy benthic detritivores survive best
+                TrophicLevel.PRIMARY_PRODUCER -> 0.75f // Stromatolite biostromes weather shock
+                TrophicLevel.PRIMARY_CONSUMER -> 0.55f
+                TrophicLevel.APEX_PREDATOR -> 0.35f // Apex predators face trophic collapse
+                else -> 0.50f
+            }
+            val mutatedPhenotype = if (type == CataclysmType.GAMMA_RAY_BURST) {
+                mutateSpecimen(org.phenotype)
+            } else org.phenotype
+
+            val epiX = 0.45f
+            val epiY = 0.50f
+            val fleeHeading = atan2(org.yRatio - epiY, org.xRatio - epiX)
+
+            org.copy(
+                health = (org.health * healthMultiplier).coerceIn(0.15f, 1.0f),
+                behavior = if (type == CataclysmType.GAMMA_RAY_BURST) OrganismBehavior.RADIATION_MUTATING else OrganismBehavior.FLEEING_CATACLYSM,
+                headingRad = fleeHeading,
+                speed = if (type == CataclysmType.SNOWBALL_RUNAWAY) 0.008f else org.speed * 1.6f,
+                phenotype = mutatedPhenotype,
+                isStressed = true,
+                stressReason = "${type.title}: Impact & Extinction Wave!",
+                adaptationNote = if (type == CataclysmType.GAMMA_RAY_BURST) "Cosmic Radiation Mutated" else "Disaster Evasion"
+            )
+        }
+
         val activeCataclysm = ActiveCataclysm(
             type = type,
             startedAtTimeGa = state.currentTimeGa,
@@ -286,6 +861,7 @@ object SimulationEngine {
             planetary = updatedPlanetary,
             activeCataclysm = activeCataclysm,
             clades = updatedClades,
+            livingOrganisms = updatedLivingOrganisms,
             totalBiomassTons = newBiomass,
             systemAlertMessage = "CRITICAL ALERT: ${type.title} triggered! ${type.primaryPhysics}"
         )
@@ -522,6 +1098,139 @@ object SimulationEngine {
             mutationRatePerGeneration = 0.015f
         )
 
+        // Specimen 6: Acellular Capsid Bacteriophage
+        val phagus = OrganismPhenotype(
+            id = "org_virus_phagus",
+            binomialName = "Phagus archaicus",
+            commonName = "Icosahedral Capsid Bacteriophage",
+            phylum = "Capsid Viruses & Bacteriophages",
+            activeCodons = listOf(CodonType.VIRAL_CAPSID_INJECT, CodonType.CATALASE),
+            bodyLengthMeters = 0.0000002f, // 200 nanometers
+            massKg = 1e-19f,
+            respirationSystem = "Acellular Structural Stability",
+            circulationSystem = "Brownian Micro-Diffusion",
+            gaitDescription = "Brownian drift & contractile tail sheath",
+            segments = listOf(SegmentUnit(0, SegmentType.CEPHALIC, 0.4f, 1, LimbType.CILIA_FLAGELLA)),
+            biomechanics = BiomechanicalMetrics(0.0000002f, 1e-19f, 0.05f, 0.00001f, 0.0001f, 9.9f),
+            fitnessScore = 0.86f,
+            mutationRatePerGeneration = 0.12f
+        )
+
+        // Specimen 7: Armored Placoderm Super-Predator
+        val placoderm = OrganismPhenotype(
+            id = "org_placoderm_dunkle",
+            binomialName = "Dunkleosteus armoris",
+            commonName = "Armored Placoderm Super-Predator",
+            phylum = "Armored Jawed Fishes",
+            activeCodons = listOf(CodonType.CALCIFICATION_CA3PO4, CodonType.CYTOCHROME_C, CodonType.VASCULAR_PUMP, CodonType.COLLAGEN_ELASTIN),
+            bodyLengthMeters = 1.2f,
+            massKg = 45.0f,
+            respirationSystem = "Opercular Branchial Gill Chambers",
+            circulationSystem = "Two-Chambered Contractile Branchial Heart",
+            gaitDescription = "Carangiform caudal thrust & hydrofoil stabilization",
+            segments = listOf(
+                SegmentUnit(0, SegmentType.CEPHALIC, 1.2f, 2, LimbType.HYDROFOIL_FIN),
+                SegmentUnit(1, SegmentType.THORACIC, 1.3f, 2, LimbType.HYDROFOIL_FIN),
+                SegmentUnit(2, SegmentType.THORACIC, 1.1f, 0, LimbType.NONE),
+                SegmentUnit(3, SegmentType.CAUDAL, 0.7f, 1, LimbType.HYDROFOIL_FIN)
+            ),
+            biomechanics = BiomechanicalMetrics(1.2f, 45.0f, 42f, 210f, 180000f, 4.2f),
+            fitnessScore = 0.93f,
+            mutationRatePerGeneration = 0.007f
+        )
+
+        // Specimen 8: Sarcopterygian Land Walker
+        val tetrapod = OrganismPhenotype(
+            id = "org_tetrapod_tiktaalik",
+            binomialName = "Tiktaalik amphibium",
+            commonName = "Shallow-Shelf Sarcopterygian Walker",
+            phylum = "Limb-Bearing Tetrapoda",
+            activeCodons = listOf(CodonType.CALCIFICATION_CA3PO4, CodonType.CYTOCHROME_C, CodonType.VASCULAR_PUMP, CodonType.COLLAGEN_ELASTIN),
+            bodyLengthMeters = 0.75f,
+            massKg = 6.5f,
+            respirationSystem = "Dual Spiracular Lungs & Dermal Mucosa",
+            circulationSystem = "Three-Chambered Amphibious System",
+            gaitDescription = "Sprawling quadrupedal benthic crawl & pectoral push-up",
+            segments = listOf(
+                SegmentUnit(0, SegmentType.CEPHALIC, 1.0f, 0, LimbType.NONE),
+                SegmentUnit(1, SegmentType.THORACIC, 1.1f, 2, LimbType.JOINTED_WALKER),
+                SegmentUnit(2, SegmentType.THORACIC, 1.0f, 2, LimbType.JOINTED_WALKER),
+                SegmentUnit(3, SegmentType.CAUDAL, 0.6f, 1, LimbType.HYDROFOIL_FIN)
+            ),
+            biomechanics = BiomechanicalMetrics(0.75f, 6.5f, 38f, 55f, 45000f, 3.4f),
+            fitnessScore = 0.91f,
+            mutationRatePerGeneration = 0.010f
+        )
+
+        // Specimen 9: Bipedal Theropod Dinosaur
+        val dinosaur = OrganismPhenotype(
+            id = "org_dino_archeo",
+            binomialName = "Archeoraptor velox",
+            commonName = "Agile Bipedal Theropod",
+            phylum = "Archosauria & Dinosaurs",
+            activeCodons = listOf(CodonType.PNEUMATIC_BONES, CodonType.CALCIFICATION_CA3PO4, CodonType.ENDOTHERMIC_THERMO, CodonType.VASCULAR_PUMP, CodonType.NEOCORTEX_HOX),
+            bodyLengthMeters = 1.8f,
+            massKg = 28.0f,
+            respirationSystem = "Unidirectional Flow-Through Lung Air Sacs",
+            circulationSystem = "Four-Chambered High-Pressure Avian-Style Heart",
+            gaitDescription = "Digitigrade bipedal cursorial sprint (Froude Fr > 2.5)",
+            segments = listOf(
+                SegmentUnit(0, SegmentType.CEPHALIC, 0.8f, 1, LimbType.JOINTED_WALKER),
+                SegmentUnit(1, SegmentType.THORACIC, 1.0f, 2, LimbType.BIPEDAL_RAPTOR_LEG),
+                SegmentUnit(2, SegmentType.THORACIC, 0.9f, 0, LimbType.NONE),
+                SegmentUnit(3, SegmentType.CAUDAL, 0.5f, 0, LimbType.NONE)
+            ),
+            biomechanics = BiomechanicalMetrics(1.8f, 28.0f, 48f, 380f, 250000f, 4.8f),
+            fitnessScore = 0.95f,
+            mutationRatePerGeneration = 0.009f
+        )
+
+        // Specimen 10: Feathered Proto-Bird
+        val protoBird = OrganismPhenotype(
+            id = "org_bird_protoavis",
+            binomialName = "Protoavis plumata",
+            commonName = "Feathered Aerodynamic Aviator",
+            phylum = "Feathered Avian Lineages",
+            activeCodons = listOf(CodonType.KERATIN_FEATHERS, CodonType.PNEUMATIC_BONES, CodonType.ENDOTHERMIC_THERMO, CodonType.VASCULAR_PUMP, CodonType.NEOCORTEX_HOX),
+            bodyLengthMeters = 0.42f,
+            massKg = 0.85f,
+            respirationSystem = "Cervical & Abdominal Respiration Air Sacs",
+            circulationSystem = "Four-Chambered Complete Septum Heart",
+            gaitDescription = "Flapping aerodynamic vortex lift & bipedal perching",
+            segments = listOf(
+                SegmentUnit(0, SegmentType.CEPHALIC, 0.6f, 0, LimbType.NONE),
+                SegmentUnit(1, SegmentType.THORACIC, 0.9f, 2, LimbType.PNEUMATIC_WING),
+                SegmentUnit(2, SegmentType.THORACIC, 0.8f, 2, LimbType.BIPEDAL_RAPTOR_LEG),
+                SegmentUnit(3, SegmentType.CAUDAL, 0.4f, 1, LimbType.PNEUMATIC_WING)
+            ),
+            biomechanics = BiomechanicalMetrics(0.42f, 0.85f, 29f, 160f, 65000f, 5.2f),
+            fitnessScore = 0.92f,
+            mutationRatePerGeneration = 0.014f
+        )
+
+        // Specimen 11: Endothermic Mammal
+        val mammal = OrganismPhenotype(
+            id = "org_mammal_morganu",
+            binomialName = "Morganucodon vivus",
+            commonName = "Endothermic Night Forager",
+            phylum = "Endothermic Mammalia",
+            activeCodons = listOf(CodonType.ENDOTHERMIC_THERMO, CodonType.NEOCORTEX_HOX, CodonType.VASCULAR_PUMP, CodonType.COLLAGEN_ELASTIN, CodonType.CALCIFICATION_CA3PO4),
+            bodyLengthMeters = 0.12f,
+            massKg = 0.045f,
+            respirationSystem = "Diaphragmatic Alveolar Pulmonary System",
+            circulationSystem = "Four-Chambered System with Left Aortic Arch",
+            gaitDescription = "Parasagittal quadrupedal flexed-spine bounding",
+            segments = listOf(
+                SegmentUnit(0, SegmentType.CEPHALIC, 0.7f, 1, LimbType.NONE),
+                SegmentUnit(1, SegmentType.THORACIC, 0.85f, 2, LimbType.JOINTED_WALKER),
+                SegmentUnit(2, SegmentType.THORACIC, 0.80f, 2, LimbType.JOINTED_WALKER),
+                SegmentUnit(3, SegmentType.CAUDAL, 0.35f, 0, LimbType.NONE)
+            ),
+            biomechanics = BiomechanicalMetrics(0.12f, 0.045f, 22f, 32f, 8500f, 3.8f),
+            fitnessScore = 0.93f,
+            mutationRatePerGeneration = 0.011f
+        )
+
         return listOf(
             Clade(
                 id = "clad_trilobita",
@@ -597,6 +1306,96 @@ object SimulationEngine {
                 thermalToleranceMaxC = 115f,
                 oxygenRequirementPercent = 0.0f,
                 dominantMorphotype = protoChemo
+            ),
+            Clade(
+                id = "clad_virus",
+                name = "Archaic Bacteriophages",
+                phylum = PhylumCategory.VIRUS_CAPSID,
+                trophicLevel = TrophicLevel.DETRITIVORE,
+                speciationDateGa = 3.900f,
+                biomassTons = 8.5e8,
+                populationCount = 1.2e22,
+                averageLifespanYears = 0.001f,
+                meanFitness = 0.86f,
+                thermalToleranceMinC = -20f,
+                thermalToleranceMaxC = 95f,
+                oxygenRequirementPercent = 0.0f,
+                dominantMorphotype = phagus
+            ),
+            Clade(
+                id = "clad_placoderm",
+                name = "Armored Jawed Fishes",
+                phylum = PhylumCategory.PLACODERMI_FISH,
+                trophicLevel = TrophicLevel.APEX_PREDATOR,
+                speciationDateGa = 0.420f,
+                biomassTons = 4.5e10,
+                populationCount = 6.2e9,
+                averageLifespanYears = 22.0f,
+                meanFitness = 0.93f,
+                thermalToleranceMinC = 6f,
+                thermalToleranceMaxC = 34f,
+                oxygenRequirementPercent = 14f,
+                dominantMorphotype = placoderm
+            ),
+            Clade(
+                id = "clad_tetrapod",
+                name = "Sarcopterygian Walkers",
+                phylum = PhylumCategory.TETRAPODA_EQUIV,
+                trophicLevel = TrophicLevel.SECONDARY_CONSUMER,
+                speciationDateGa = 0.375f,
+                biomassTons = 3.2e10,
+                populationCount = 4.8e10,
+                averageLifespanYears = 12.0f,
+                meanFitness = 0.91f,
+                thermalToleranceMinC = 8f,
+                thermalToleranceMaxC = 36f,
+                oxygenRequirementPercent = 16f,
+                dominantMorphotype = tetrapod
+            ),
+            Clade(
+                id = "clad_dinosaur",
+                name = "Theropoda & Carnosaurs",
+                phylum = PhylumCategory.DINOSAURIA_REPTILE,
+                trophicLevel = TrophicLevel.APEX_PREDATOR,
+                speciationDateGa = 0.230f,
+                biomassTons = 6.8e10,
+                populationCount = 1.8e9,
+                averageLifespanYears = 35.0f,
+                meanFitness = 0.95f,
+                thermalToleranceMinC = 10f,
+                thermalToleranceMaxC = 42f,
+                oxygenRequirementPercent = 18f,
+                dominantMorphotype = dinosaur
+            ),
+            Clade(
+                id = "clad_bird",
+                name = "Avian Theropoda",
+                phylum = PhylumCategory.AVES_FLIGHT,
+                trophicLevel = TrophicLevel.SECONDARY_CONSUMER,
+                speciationDateGa = 0.150f,
+                biomassTons = 2.1e10,
+                populationCount = 3.4e10,
+                averageLifespanYears = 8.5f,
+                meanFitness = 0.92f,
+                thermalToleranceMinC = -15f,
+                thermalToleranceMaxC = 44f,
+                oxygenRequirementPercent = 19f,
+                dominantMorphotype = protoBird
+            ),
+            Clade(
+                id = "clad_mammal",
+                name = "Endothermic Mammalia",
+                phylum = PhylumCategory.MAMMALIA_THERIA,
+                trophicLevel = TrophicLevel.PRIMARY_CONSUMER,
+                speciationDateGa = 0.210f,
+                biomassTons = 3.9e10,
+                populationCount = 9.2e11,
+                averageLifespanYears = 5.0f,
+                meanFitness = 0.93f,
+                thermalToleranceMinC = -25f,
+                thermalToleranceMaxC = 45f,
+                oxygenRequirementPercent = 18f,
+                dominantMorphotype = mammal
             )
         )
     }

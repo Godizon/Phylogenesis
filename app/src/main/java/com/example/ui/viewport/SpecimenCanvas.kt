@@ -1,10 +1,8 @@
 package com.example.ui.viewport
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -22,31 +20,26 @@ import kotlin.math.*
 @Composable
 fun SpecimenCanvas(
     specimen: OrganismPhenotype,
+    isPaused: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pixel_specimen_anim")
+    var animTime by remember { mutableFloatStateOf(0f) }
 
-    // Metachronal gait phase
-    val gaitPhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2 * Math.PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "pixel_gait"
-    )
+    LaunchedEffect(isPaused) {
+        var lastNano = System.nanoTime()
+        while (true) {
+            withFrameNanos { nowNano ->
+                val dt = ((nowNano - lastNano) / 1_000_000_000f).coerceIn(0f, 0.05f)
+                lastNano = nowNano
+                if (!isPaused) {
+                    animTime += dt
+                }
+            }
+        }
+    }
 
-    // Pulsing 8-bit heart beat
-    val heartBeat by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pixel_heart"
-    )
+    val gaitPhase: Float = (animTime * 5.2f) % (2f * Math.PI.toFloat())
+    val heartBeat: Float = (sin(animTime * 12.5f) * 0.5f + 0.5f)
 
     Canvas(modifier = modifier.fillMaxSize()) {
         val w = size.width
@@ -95,7 +88,7 @@ fun SpecimenCanvas(
 
             // Gills / Spiracles breathing pixel blocks
             if (seg.hasBranchialGill || seg.hasSpiracle) {
-                val breathGlow = if ((gaitPhase * 2 + i).toInt() % 2 == 0) PixelGold else Color(0xFFB58308)
+                val breathGlow = if ((gaitPhase * 2f + i).toInt() % 2 == 0) PixelGold else Color(0xFFB58308)
                 drawRect(breathGlow, Offset(qx, qy - 3 * p), Size(p, p))
             }
         }

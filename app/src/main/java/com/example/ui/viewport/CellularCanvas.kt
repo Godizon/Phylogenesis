@@ -1,10 +1,8 @@
 package com.example.ui.viewport
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -17,43 +15,27 @@ import kotlin.math.*
  */
 @Composable
 fun CellularCanvas(
+    isPaused: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pixel_cell_anim")
+    var animTime by remember { mutableFloatStateOf(0f) }
 
-    // Membrane wave step
-    val waveStep by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "membrane_step"
-    )
+    LaunchedEffect(isPaused) {
+        var lastNano = System.nanoTime()
+        while (true) {
+            withFrameNanos { nowNano ->
+                val dt = ((nowNano - lastNano) / 1_000_000_000f).coerceIn(0f, 0.05f)
+                lastNano = nowNano
+                if (!isPaused) {
+                    animTime += dt
+                }
+            }
+        }
+    }
 
-    // Rotor pixel spin
-    val rotorStepFloat by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 4f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotor_step"
-    )
-    val rotorStep = rotorStepFloat.toInt()
-
-    // ATP spark pulse
-    val atpSpark by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(600, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "atp_spark"
-    )
+    val waveStep = (animTime * 4.4f) % 8f
+    val rotorStep = ((animTime * 8f) % 4f).toInt()
+    val atpSpark = (sin(animTime * 10f) * 0.5f + 0.5f)
 
     Canvas(modifier = modifier.fillMaxSize()) {
         val w = size.width

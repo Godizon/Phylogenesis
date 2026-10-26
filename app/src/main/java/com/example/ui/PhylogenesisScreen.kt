@@ -91,13 +91,15 @@ fun PhylogenesisScreen(
     BackHandler(
         enabled = showLeftTelemetry || showRightClades || state.showCladogramModal ||
                 state.showSpecimenModal || state.showGeneEditorModal || state.showGodToolsSheet ||
-                showSettingsModal || tutorialState.isActive
+                state.showCelestialModal || showSettingsModal || tutorialState.isActive || (state.selectedOrganismId != null)
     ) {
         when {
+            state.selectedOrganismId != null -> viewModel.clearSelectedOrganism()
             tutorialState.isActive -> viewModel.skipTutorial()
             showSettingsModal -> viewModel.setShowSettingsModal(false)
             state.showGodToolsSheet -> viewModel.setGodToolsSheetVisible(false)
             state.showGeneEditorModal -> viewModel.setShowGeneEditorModal(false)
+            state.showCelestialModal -> viewModel.setCelestialModalVisible(false)
             state.showSpecimenModal -> viewModel.setSpecimenModalVisible(false)
             state.showCladogramModal -> viewModel.setCladogramModalVisible(false)
             showLeftTelemetry -> showLeftTelemetry = false
@@ -125,7 +127,25 @@ fun PhylogenesisScreen(
                 state = state,
                 onZoomIn = { viewModel.zoomIn() },
                 onZoomOut = { viewModel.zoomOut() },
-                onSelectSpecimen = { coachDismissed = true; viewModel.selectSpecimen(it) },
+                onSelectOrganism = { org ->
+                    coachDismissed = true
+                    viewModel.selectOrganism(org)
+                },
+                onClearSelectedOrganism = {
+                    viewModel.clearSelectedOrganism()
+                },
+                onInspectSpecimenModal = { pheno ->
+                    viewModel.selectSpecimen(pheno)
+                },
+                onMutateSpecimen = {
+                    viewModel.mutateSelectedSpecimen()
+                },
+                onOpenGeneLab = {
+                    viewModel.setShowGeneEditorModal(true)
+                },
+                onTogglePlayPause = {
+                    viewModel.togglePlayPause()
+                },
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -350,7 +370,17 @@ fun PhylogenesisScreen(
                     onOpenTree = { viewModel.setCladogramModalVisible(true) },
                     onOpenTimeTravel = { showTimeTravel = true },
                     onOpenPlanetControls = { viewModel.setGodToolsSheetVisible(true) },
+                    onOpenCelestialModal = { viewModel.setCelestialModalVisible(true) },
                     onShowInfo = { infoEntry = it }
+                )
+            }
+
+            // Celestial Observatory Modal
+            if (state.showCelestialModal) {
+                CelestialObservatoryModal(
+                    currentPlanetary = state.planetary,
+                    onDismiss = { viewModel.setCelestialModalVisible(false) },
+                    onSelectScenario = { scenario -> viewModel.applyCelestialScenario(scenario) }
                 )
             }
 

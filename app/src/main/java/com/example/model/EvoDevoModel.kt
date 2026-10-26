@@ -16,7 +16,13 @@ enum class CodonType(val code: String, val category: String, val functionDescrip
     HOX_THORACIC("HOX-B4", "Developmental", "Metamere limb duplication: coordinates segmented locomotive appendages"),
     HOX_ABDOMINAL("HOX-C9", "Developmental", "Posterior visceral patterning: organ cavities, spiracles, gills & gonads"),
     SPIRACLE_TRACHEA("TRC-07", "Respiration", "Direct gas diffusion micro-tubules (effective only when ambient O₂ is elevated)"),
-    VASCULAR_PUMP("VAS-11", "Circulatory", "Closed contractile chambers bypassing Fick's diffusion limit for mass > 1g")
+    VASCULAR_PUMP("VAS-11", "Circulatory", "Closed contractile chambers bypassing Fick's diffusion limit for mass > 1g"),
+    ENDOTHERMIC_THERMO("END-03", "Thermoregulation", "Uncoupling protein thermogenesis in brown adipose for homeothermic endothermy"),
+    PNEUMATIC_BONES("AIR-06", "Skeletal", "Hollow trabecular bone architecture preventing skeletal yield failure in giant animals"),
+    KERATIN_FEATHERS("KRT-09", "Integumentary", "Keratinous pennaceous feathers generating aerodynamic vortex lift and thermal insulation"),
+    NEOCORTEX_HOX("BRA-01", "Neurological", "Encephalization and neural telencephalon expansion for behavioral plasticity"),
+    VIRAL_CAPSID_INJECT("VIR-02", "Genetic Vector", "Icosahedral protein capsid injecting genetic sequences across domain barriers"),
+    AZOTOSOME_LIPID("AZO-04", "Cryo-Membrane", "Methane-soluble non-phospholipid membranes fluid at cryogenic -180°C")
 }
 
 /**
@@ -59,7 +65,9 @@ enum class LimbType(val label: String, val dynamicCost: String) {
     CILIA_FLAGELLA("Cilia/Flagella", "Low (viscous creeping flow)"),
     JOINTED_WALKER("Jointed Exopod", "Medium (inverted pendulum gait)"),
     HYDROFOIL_FIN("Hydrofoil Fin", "Low-Medium (vortex lift generation)"),
-    AERODYNAMIC_WING("Chitinous Wing", "High (requires elevated O₂ & light airframe)")
+    AERODYNAMIC_WING("Chitinous Wing", "High (requires elevated O₂ & light airframe)"),
+    BIPEDAL_RAPTOR_LEG("Bipedal Pillar Leg", "High (inverted pendulum bipedal stride)"),
+    PNEUMATIC_WING("Feathered Wing", "High (aerodynamic vortex downstroke)")
 }
 
 /**

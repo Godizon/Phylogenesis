@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan for UI layout reorganization, clutter reduction, immersive full-screen game viewport, tap-to-inspect tooltips, and weather speed/layer toggles.",
-  "updatedAt":  "2026-10-25T14:42:07.784018691Z",
+  "summary":  "Implementation plan for expanding Phylogenesis into a universal evolutionary simulator with procedural taxonomy (microbes, viruses, fish, dinosaurs, birds, mammals), realistic planetary environments (Earth, Mars, Europa, Titan, Eridani), an advanced Evo-Devo mutation workbench with complete biological telemetry, and a non-overlapping docked UI architecture.",
+  "updatedAt":  "2026-10-26T19:49:39.200760530Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

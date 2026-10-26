@@ -136,4 +136,96 @@ class ExampleUnitTest {
         // Metabolic cost scales with gravity load
         assertTrue(heavyOrganism.biomechanics.dailyMetabolicKj > earthOrganism.biomechanics.dailyMetabolicKj)
     }
+
+    @Test
+    fun livingOrganisms_areInitializedWithCanonicalSpecies() {
+        val state = SimulationEngine.createInitialState()
+        assertTrue("Living organisms must not be empty", state.livingOrganisms.isNotEmpty())
+        assertTrue("Must contain Trilobite", state.livingOrganisms.any { it.cladeId == "clad_trilobita" })
+        assertTrue("Must contain Anomalocaris", state.livingOrganisms.any { it.cladeId == "clad_anomalocaris" })
+        assertTrue("Must contain Stem-Chordata", state.livingOrganisms.any { it.cladeId == "clad_chordata" })
+        assertTrue("Must contain Stromatolite Reef", state.livingOrganisms.any { it.cladeId == "clad_cyanobiota" })
+    }
+
+    @Test
+    fun tick_whenPaused_strictlyFreezesSimulation() {
+        val state = SimulationEngine.createInitialState().copy(isPaused = true)
+        val next = SimulationEngine.tick(state, 1.0f)
+
+        // Time must NOT advance when paused
+        assertEquals(state.currentTimeGa, next.currentTimeGa, 0.00001f)
+        // Organisms must be completely frozen in place
+        assertEquals(state.livingOrganisms, next.livingOrganisms)
+    }
+
+    @Test
+    fun tick_whenRunning_movesOrganisms() {
+        val state = SimulationEngine.createInitialState().copy(isPaused = false)
+        val next = SimulationEngine.tick(state, 1.0f)
+
+        // Time advances
+        assertTrue(next.currentTimeGa < state.currentTimeGa)
+        // Mobile organisms should have updated positions or swim phases
+        val mobileBefore = state.livingOrganisms.first { it.speed > 0f }
+        val mobileAfter = next.livingOrganisms.first { it.id == mobileBefore.id }
+        assertTrue(mobileBefore.swimPhase != mobileAfter.swimPhase)
+    }
+
+    @Test
+    fun hyperoxia_triggersAdaptiveGigantism() {
+        val state = SimulationEngine.createInitialState()
+        val hyperoxicState = state.copy(
+            isPaused = false,
+            planetary = state.planetary.copy(
+                atmosphere = state.planetary.atmosphere.copy(o2Percent = 32.0f)
+            )
+        )
+        val stepped = SimulationEngine.tick(hyperoxicState, 1.0f)
+
+        // Organisms should exhibit Gigantism adaptation note and spiracle trachea
+        val gigantismOrg = stepped.livingOrganisms.first { it.speed > 0f }
+        assertTrue(
+            "Must exhibit Gigantism adaptation: ${gigantismOrg.adaptationNote}",
+            gigantismOrg.adaptationNote.contains("Gigantism", ignoreCase = true)
+        )
+        assertTrue(
+            "Must evolve spiracle trachea under high O2",
+            gigantismOrg.phenotype.activeCodons.contains(CodonType.SPIRACLE_TRACHEA)
+        )
+    }
+
+    @Test
+    fun hypoxia_triggersDwarfismAndBranchialGills() {
+        val state = SimulationEngine.createInitialState()
+        val hypoxicState = state.copy(
+            isPaused = false,
+            planetary = state.planetary.copy(
+                atmosphere = state.planetary.atmosphere.copy(o2Percent = 3.0f)
+            )
+        )
+        val stepped = SimulationEngine.tick(hypoxicState, 1.0f)
+
+        val hypoxicOrg = stepped.livingOrganisms.first { it.speed > 0f }
+        assertTrue(
+            "Must exhibit Hypoxic adaptation: ${hypoxicOrg.adaptationNote}",
+            hypoxicOrg.adaptationNote.contains("Hypoxic", ignoreCase = true)
+        )
+        assertTrue(
+            "Must develop branchial gills across segments",
+            hypoxicOrg.phenotype.segments.any { it.hasBranchialGill }
+        )
+    }
+
+    @Test
+    fun triggerCataclysm_inflictsDirectImpactOnLivingOrganisms() {
+        val state = SimulationEngine.createInitialState()
+        val postCataclysm = SimulationEngine.triggerCataclysm(state, CataclysmType.CHICXULUB_BOLIDE)
+
+        assertTrue("Organisms must be stressed after cataclysm", postCataclysm.livingOrganisms.all { it.isStressed })
+        val apex = postCataclysm.livingOrganisms.first { it.cladeId == "clad_anomalocaris" }
+        // Apex predator should suffer trophic health collapse (< 0.5f)
+        assertTrue("Apex predator health must drop under cataclysm", apex.health < 0.5f)
+        assertEquals(OrganismBehavior.FLEEING_CATACLYSM, apex.behavior)
+    }
 }
+
